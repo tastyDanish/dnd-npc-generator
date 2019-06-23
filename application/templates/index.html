@@ -54,8 +54,8 @@
     </table>
     <br>
     <b>Skills </b>
-    {% for skill in npc.skills %}
-        {{ skill }}{{ "," if not loop.last }}
+    {% for skill, bonus in npc.skills.items() %}
+        {{ skill }} {{bonus}}{{ "," if not loop.last }}
     {% endfor %}
     <br>
     <b>Languages </b>

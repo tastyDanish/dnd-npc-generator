@@ -4,7 +4,7 @@ Date 2019-06-22
 """
 from application import random_weight, db
 from application.models import Attributes
-from math import floor
+from math import floor, ceil
 
 
 def get_list(all_attributes, attribute):
@@ -17,6 +17,10 @@ def get_list_and_weight(all_attributes, attribute):
     return dict(zip([x.value for x in all_items], [x.weight for x in all_items]))
 
 
+def get_attributes(all_attributes, attribute):
+    return [x for x in all_attributes if x.attribute == attribute]
+
+
 def string_bonus(bonus):
     if bonus >= 0:
         return '+{}'.format(bonus)
@@ -24,8 +28,26 @@ def string_bonus(bonus):
         return '-{}'.format(abs(bonus))
 
 
+def get_attr_from_list(attrs, value):
+    for attr in attrs:
+        if attr.value == value:
+            return attr
+    else:
+        return None
+
+
+def get_tag_value(my_node, tag_name):
+    for tag in my_node.tags:
+        if tag.tag_name == tag_name:
+            return tag.tag_value
+    else:
+        return None
+
+
 class NPC:
-    def __init__(self):
+    def __init__(self, level=1):
+        self.level = level
+        self.prof_bonus = 1 + ceil(level / 4)
         attrs = Attributes.query.all()
         self.name = random_weight.choose_one(get_list(attrs, 'Name'))
 
@@ -55,25 +77,31 @@ class NPC:
         self.cha = floor((int(self.charisma) - 10) / 4)
         self.cha_string = string_bonus(self.cha)
 
+        self.stats = {'STR': self.str, 'DEX': self.dex, 'CON': self.con,
+                      'INT': self.int, 'WIS': self.wis, 'CHA': self.cha}
+
         # TODO: MAKE THIS INTO A DICTIONARY TO INCLUDE BONUS
-        self.skills = self.generate_skills(get_list(attrs, 'Skill'))
+        self.skills = self.generate_skills(get_attributes(attrs, 'Skill'))
 
         self.languages = ['Common', random_weight.choose_one(get_list(attrs, 'Language'))]
 
-    def generate_skills(self, skill_list):
+    def generate_skills(self, skill_attrs):
         skill_count = random_weight.roll_with_weights({2: 6, 3: 2, 4: 1})
-        skills = []
+        skills = {}
         for i in range(skill_count):
-            choice = random_weight.choose_one_with_removal(skill_list, skills)
-            skills.append(choice)
+            choice = random_weight.choose_one_with_removal([x.value for x in skill_attrs], list(skills.keys()))
+            choice_attr = get_attr_from_list(skill_attrs, choice)
+            skills[choice] = string_bonus(self.prof_bonus + self.stats[get_tag_value(choice_attr, 'skill_stat')])
 
         return skills
 
 
 if __name__ == '__main__':
-    my_npc = NPC()
+    my_npc = NPC(18)
     print('Name: {}'.format(my_npc.name))
     print('Race: {}'.format(my_npc.race))
+    print('Level: {}'.format(my_npc.level))
+    print('Proficiency Bonus: {}'.format(my_npc.prof_bonus))
     print('STR: {} ({})| DEX: {} ({})| CON: {} ({})| INT: {} ({})| WIS: {} ({})| CHA: {} ({})'
           .format(my_npc.strength, my_npc.str_string,
                   my_npc.dexterity, my_npc.dex_string,
