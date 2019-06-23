@@ -80,7 +80,6 @@ class NPC:
         self.stats = {'STR': self.str, 'DEX': self.dex, 'CON': self.con,
                       'INT': self.int, 'WIS': self.wis, 'CHA': self.cha}
 
-        # TODO: MAKE THIS INTO A DICTIONARY TO INCLUDE BONUS
         self.skills = self.generate_skills(get_attributes(attrs, 'Skill'))
 
         self.languages = ['Common', random_weight.choose_one(get_list(attrs, 'Language'))]
@@ -89,15 +88,14 @@ class NPC:
         skill_count = random_weight.roll_with_weights({2: 6, 3: 2, 4: 1})
         skills = {}
         for i in range(skill_count):
-            choice = random_weight.choose_one_with_removal([x.value for x in skill_attrs], list(skills.keys()))
-            choice_attr = get_attr_from_list(skill_attrs, choice)
-            skills[choice] = string_bonus(self.prof_bonus + self.stats[get_tag_value(choice_attr, 'skill_stat')])
+            choice = random_weight.choose_one_with_removal(skill_attrs, list(skills.keys()))
+            skills[choice.value] = string_bonus(self.prof_bonus + self.stats[get_tag_value(choice, 'skill_stat')])
 
         return skills
 
 
 if __name__ == '__main__':
-    my_npc = NPC(18)
+    my_npc = NPC()
     print('Name: {}'.format(my_npc.name))
     print('Race: {}'.format(my_npc.race))
     print('Level: {}'.format(my_npc.level))
@@ -109,5 +107,8 @@ if __name__ == '__main__':
                   my_npc.intellect, my_npc.int_string,
                   my_npc.wisdom, my_npc.wis_string,
                   my_npc.charisma, my_npc.cha_string))
-    print('Skills: {}'.format(my_npc.skills))
-    print('Languages: {}'.format(my_npc.languages))
+    print('Skills:')
+    for skill, bonus in my_npc.skills.items():
+        print('{} {}'.format(skill, bonus))
+    for language in my_npc.languages:
+        print(language)
