@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% block content %}
+
+
+<div class="col-md-4 col-md-offset-4">
+    <div align="center">
+        <h2>NPC GENERATOR</h2>
+    </div>
+
+    <hr>
+    <b>Name</b> {{ npc.name }}<br>
+    <b>Race</b> {{ npc.race }}<br><br>
+    <table>
+        <tr>
+            <td style="text-align: center;">
+                <b>STR</b>
+            </td>
+            <td style="text-align: center;">
+                <b>DEX</b>
+            </td>
+            <td style="text-align: center;">
+                <b>CON</b>
+            </td>
+            <td style="text-align: center;">
+                <b>INT</b>
+            </td>
+            <td style="text-align: center;">
+                <b>WIS</b>
+            </td>
+            <td style="text-align: center;">
+                <b>CHA</b>
+            </td>
+        </tr>
+        <tr>
+            <td style="padding: 5px 10px 5px 5px;text-align: center;">
+                {{ npc.strength }} ({{ npc.str_string }})
+            </td>
+            <td style="padding: 5px 10px 5px 5px;text-align: center;">
+                {{ npc.dexterity }} ({{ npc.dex_string }})
+            </td>
+            <td style="padding: 5px 10px 5px 5px;text-align: center;">
+                {{ npc.constitution }} ({{ npc.con_string }})
+            </td>
+            <td style="padding: 5px 10px 5px 5px;text-align: center;">
+                {{ npc.intellect }} ({{ npc.int_string }})
+            </td>
+            <td style="padding: 5px 10px 5px 5px;text-align: center;">
+                {{ npc.wisdom }} ({{ npc.wis_string }})
+            </td>
+            <td style="padding: 5px 10px 5px 5px;text-align: center;">
+                {{ npc.charisma }} ({{ npc.cha_string}})
+            </td>
+        </tr>
+    </table>
+    <br>
+    <b>Skills </b>
+    {% for skill in npc.skills %}
+        {{ skill }}{{ "," if not loop.last }}
+    {% endfor %}
+    <br>
+    <b>Languages </b>
+    {% for language in npc.languages %}
+        {{ language }}{{ "," if not loop.last }}
+    {% endfor %}
+
+</div>
+
+{% endblock %}  

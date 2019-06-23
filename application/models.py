@@ -2,7 +2,7 @@ from application import db
 
 
 class Attributes(db.Model):
-    id = db.Column(db.Interger, primary_key=True)
+    id = db.Column(db.Integer, primary_key=True)
     attribute = db.Column(db.String(128), index=True, unique=False)
     value = db.Column(db.String(128), index=True, unique=False, nullable=False)
     weight = db.Column(db.Integer, nullable=False)
