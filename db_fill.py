@@ -11,7 +11,8 @@ if __name__ == '__main__':
                           value=row['value'],
                           weight=row['weight'])
         if type(row['tags']) is str:
-            tags_list = json.loads(row['tags'][1: -1])
+            print(row['tags'])
+            tags_list = json.loads(row['tags'])
             for tag, value in tags_list.items():
                 final_tag = Tags.query.filter_by(tag_name=tag, tag_value=value).first()
                 if final_tag is not None:
