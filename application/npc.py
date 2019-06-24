@@ -89,7 +89,6 @@ class NPC:
 
         self.stats = self.generate_stats(get_attributes(attrs, 'Stat'), get_attr_from_list(attrs, self.race))
 
-
         self.strength = self.stats['STR']
         self.str = floor((int(self.strength) - 10) / 4)
         self.str_string = string_bonus(self.str)
@@ -120,6 +119,54 @@ class NPC:
         self.skills = self.generate_skills(get_attributes(attrs, 'Skill'))
 
         self.languages = ['Common', random_weight.choose_one(get_list(attrs, 'Language'))]
+
+        self.main_hand = random_weight.choose_one(get_attributes(attrs, 'Weapon'))
+        self.damage = self.get_damage_string(self.main_hand)
+
+        if get_tag_value(self.main_hand, 'hand') != 'two':
+            if self.str >= self.dex:
+                self.off_hand = get_attr_from_list(attrs, 'Shield')
+                self.off_damage = None
+            else:
+                self.off_hand = get_attr_from_list(attrs, 'Dagger')
+                self.off_damage = self.get_damage_string(self.off_hand, off=True)
+        else:
+            self.off_hand = None
+            self.off_damage = None
+        self.armor = random_weight.choose_one(get_attributes(attrs, 'Armor'))
+        self.ac = self.get_ac()
+        self.ac_string = self.get_ac_string()
+
+    def get_ac(self):
+        ac = int(get_tag_value(self.armor, 'AC'))
+        if get_tag_value(self.armor, 'armor_type') == 'light':
+            ac = ac + self.stat_bonus['DEX']
+        elif get_tag_value(self.armor, 'armor_type') == 'medium':
+            if self.stat_bonus['DEX'] <= 2:
+                ac = ac + self.stat_bonus['DEX']
+            else:
+                ac = ac + 2
+        if self.off_hand is not None and self.off_hand.value == 'Shield':
+            ac = ac + 2
+        return ac
+
+    def get_ac_string(self):
+        armor_string = '{} ({}'.format(self.ac, self.armor.value)
+        if self.off_hand is not None and self.off_hand.value == 'Shield':
+            armor_string = armor_string + ', Shield)'
+        else:
+            armor_string = armor_string + ')'
+        return armor_string
+
+    def get_damage_string(self, weapon_attr, off=False):
+        dice = get_tag_value(weapon_attr, 'damage')
+        to_hit = string_bonus(self.prof_bonus + self.stat_bonus[get_tag_value(weapon_attr, 'stat')])
+        if not off:
+            dmg_bonus = string_bonus(self.stat_bonus[get_tag_value(weapon_attr, 'stat')])
+        else:
+            dmg_bonus = ''
+        return '{} to hit, one target. Hit: {}{} {} damage'\
+            .format(to_hit, dice, dmg_bonus, get_tag_value(weapon_attr, 'damage_type'))
 
     def generate_stats(self, stat_attrs, race_attr):
         race_stat_array = {'STR': int(get_attr_tag(stat_attrs, 'STR', self.race)),
@@ -160,6 +207,22 @@ class NPC:
 
         return skills
 
+    def get_highest_stat(self):
+        """
+        Gives you a list of the highest stats. Generally this is a single value, but sometimes its two or more!
+        :return: the highest stats
+        :rtype: list
+        """
+        highest = 0
+        big_stat = []
+        for stat, value in self.stats.items():
+            if value > highest:
+                highest = value
+                big_stat = [stat]
+            elif value == highest:
+                big_stat.append(stat)
+        return big_stat
+
 
 if __name__ == '__main__':
     my_npc = NPC()
@@ -167,6 +230,7 @@ if __name__ == '__main__':
     print('Race: {}'.format(my_npc.race))
     print('Level: {}'.format(my_npc.level))
     print('Proficiency Bonus: {}'.format(my_npc.prof_bonus))
+    print('Armor Class: {}'.format(my_npc.ac_string))
     print('STR: {} ({})| DEX: {} ({})| CON: {} ({})| INT: {} ({})| WIS: {} ({})| CHA: {} ({})'
           .format(my_npc.strength, my_npc.str_string,
                   my_npc.dexterity, my_npc.dex_string,
@@ -179,3 +243,5 @@ if __name__ == '__main__':
         print('{} {}'.format(skill, bonus))
     for language in my_npc.languages:
         print(language)
+    print('{}. {}'.format(my_npc.main_hand.value, my_npc.damage))
+    print('{}. {}'.format(my_npc.off_hand.value, my_npc.off_damage))

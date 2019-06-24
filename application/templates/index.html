@@ -6,10 +6,10 @@
     <div align="center">
         <h2>NPC GENERATOR</h2>
     </div>
-
     <hr>
     <b>Name</b> {{ npc.name }}<br>
-    <b>Race</b> {{ npc.race }}<br><br>
+    <i>Medium humanoid ({{ npc.race }})</i><br>
+    <b>Armor Class </b> {{ npc.ac_string }}<br><br>
     <table>
         <tr>
             <td style="text-align: center;">
@@ -62,7 +62,8 @@
     {% for language in npc.languages %}
         {{ language }}{{ "," if not loop.last }}
     {% endfor %}
-
+    <br>
+    <b>{{ npc.main_hand.value }}.</b> {{ npc.damage }}
 </div>
 
 {% endblock %}  
