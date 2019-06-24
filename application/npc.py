@@ -5,6 +5,7 @@ Date 2019-06-22
 from application import random_weight, db
 from application.models import Attributes
 from math import floor, ceil
+from random import randint
 
 _stat_array = [15, 14, 13, 12, 10, 8]
 
@@ -30,9 +31,9 @@ def string_bonus(bonus):
         return '-{}'.format(abs(bonus))
 
 
-def get_attr_from_list(attrs, value):
+def get_attr_from_list(attrs, attribute, value):
     for attr in attrs:
-        if attr.value == value:
+        if attr.attribute == attribute and attr.value == value:
             return attr
     else:
         return None
@@ -46,8 +47,8 @@ def get_tag_value(my_node, tag_name):
         return None
 
 
-def get_attr_tag(attrs, value, tag_name):
-    my_attr = get_attr_from_list(attrs, value)
+def get_attr_tag(attrs, attribute, value, tag_name):
+    my_attr = get_attr_from_list(attrs, attribute, value)
     if my_attr is not None:
         return get_tag_value(my_attr, tag_name)
 
@@ -87,7 +88,7 @@ class NPC:
 
         self.race = random_weight.choose_one(get_list(attrs, 'Race'))
 
-        self.stats = self.generate_stats(get_attributes(attrs, 'Stat'), get_attr_from_list(attrs, self.race))
+        self.stats = self.generate_stats(get_attributes(attrs, 'Stat'), get_attr_from_list(attrs, 'Race', self.race))
 
         self.strength = self.stats['STR']
         self.str = floor((int(self.strength) - 10) / 2)
@@ -127,10 +128,10 @@ class NPC:
 
         if get_tag_value(self.main_hand, 'hand') != 'two':
             if self.str >= self.dex:
-                self.off_hand = get_attr_from_list(attrs, 'Shield')
+                self.off_hand = get_attr_from_list(attrs, 'Shield', 'Shield')
                 self.off_damage = None
             else:
-                self.off_hand = get_attr_from_list(attrs, 'Dagger')
+                self.off_hand = get_attr_from_list(attrs, 'Weapon', 'Dagger')
                 self.off_damage = self.get_damage_string(self.off_hand, off=True)
         else:
             self.off_hand = None
@@ -139,11 +140,22 @@ class NPC:
         self.ac = self.get_ac()
         self.ac_string = self.get_ac_string()
 
+        self.health = self.calculate_health()
+
+    def calculate_health(self):
+        health = 0
+        for i in range(self.level):
+            if i == 0:
+                health += int(get_tag_value(self.archetype, 'health')) + self.con
+            else:
+                health += randint(1, int(get_tag_value(self.archetype, 'health'))) + self.con
+
+        return health
+
     def get_archetype(self, class_attrs):
         high_stat = self.get_highest_stat()
         low_stat = self.get_lowest_stat()
         class_array = {}
-        print(class_attrs)
         for arch in class_attrs:
             if get_tag_value(arch, 'stat') == high_stat:
                 class_array[arch] = 30
@@ -151,7 +163,6 @@ class NPC:
                 class_array[arch] = 1
             else:
                 class_array[arch] = 10
-        print(class_array)
         return random_weight.roll_with_weights(class_array)
 
     def get_ac(self):
@@ -186,12 +197,12 @@ class NPC:
             .format(to_hit, dice, dmg_bonus, get_tag_value(weapon_attr, 'damage_type'))
 
     def generate_stats(self, stat_attrs, race_attr):
-        race_stat_array = {'STR': int(get_attr_tag(stat_attrs, 'STR', self.race)),
-                           'DEX': int(get_attr_tag(stat_attrs, 'DEX', self.race)),
-                           'CON': int(get_attr_tag(stat_attrs, 'CON', self.race)),
-                           'INT': int(get_attr_tag(stat_attrs, 'INT', self.race)),
-                           'WIS': int(get_attr_tag(stat_attrs, 'WIS', self.race)),
-                           'CHA': int(get_attr_tag(stat_attrs, 'CHA', self.race))}
+        race_stat_array = {'STR': int(get_attr_tag(stat_attrs, 'Stat', 'STR', self.race)),
+                           'DEX': int(get_attr_tag(stat_attrs, 'Stat', 'DEX', self.race)),
+                           'CON': int(get_attr_tag(stat_attrs, 'Stat', 'CON', self.race)),
+                           'INT': int(get_attr_tag(stat_attrs, 'Stat', 'INT', self.race)),
+                           'WIS': int(get_attr_tag(stat_attrs, 'Stat', 'WIS', self.race)),
+                           'CHA': int(get_attr_tag(stat_attrs, 'Stat', 'CHA', self.race))}
         my_stats = {}
         remove_stats = []
         for i, stat in enumerate(_stat_array):
@@ -199,7 +210,9 @@ class NPC:
             my_stats[chosen_stat] = stat
             remove_stats.append(chosen_stat)
 
+        print(race_attr)
         stat_bonus_2 = get_tag_value(race_attr, 'stat_bonus_2')
+        print(stat_bonus_2)
         if stat_bonus_2 is not None:
             my_stats[stat_bonus_2] = my_stats[stat_bonus_2] + 2
 
@@ -221,11 +234,8 @@ class NPC:
         class_skills = Attributes.query.filter_by(attribute='Skill').\
             filter(Attributes.tags.any(tag_value='Fighter')).all()
         all_skills = random_weight.choose_several(skill_attrs, 4, selection=class_skills)
-        print(all_skills)
         for i in range(skill_count):
-            print(i)
             choice = random_weight.choose_one_with_removal(all_skills, list(skills.keys()))
-            print(choice)
             skills[choice] = string_bonus(self.prof_bonus + self.stat_bonus[get_tag_value(choice, 'skill_stat')])
 
         return skills
@@ -270,6 +280,7 @@ if __name__ == '__main__':
     print('Level: {} {}'.format(my_npc.level, my_npc.archetype.value))
     print('Proficiency Bonus: {}'.format(my_npc.prof_bonus))
     print('Armor Class: {}'.format(my_npc.ac_string))
+    print('HP: {}'.format(my_npc.health))
     print('STR: {} ({})| DEX: {} ({})| CON: {} ({})| INT: {} ({})| WIS: {} ({})| CHA: {} ({})'
           .format(my_npc.strength, my_npc.str_string,
                   my_npc.dexterity, my_npc.dex_string,
