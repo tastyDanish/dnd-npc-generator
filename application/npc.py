@@ -90,31 +90,33 @@ class NPC:
         self.stats = self.generate_stats(get_attributes(attrs, 'Stat'), get_attr_from_list(attrs, self.race))
 
         self.strength = self.stats['STR']
-        self.str = floor((int(self.strength) - 10) / 4)
+        self.str = floor((int(self.strength) - 10) / 2)
         self.str_string = string_bonus(self.str)
 
         self.dexterity = self.stats['DEX']
-        self.dex = floor((int(self.dexterity) - 10) / 4)
+        self.dex = floor((int(self.dexterity) - 10) / 2)
         self.dex_string = string_bonus(self.dex)
 
         self.constitution = self.stats['CON']
-        self.con = floor((int(self.constitution) - 10) / 4)
+        self.con = floor((int(self.constitution) - 10) / 2)
         self.con_string = string_bonus(self.con)
 
         self.intellect = self.stats['INT']
-        self.int = floor((int(self.intellect) - 10) / 4)
+        self.int = floor((int(self.intellect) - 10) / 2)
         self.int_string = string_bonus(self.int)
 
         self.wisdom = self.stats['WIS']
-        self.wis = floor((int(self.wisdom) - 10) / 4)
+        self.wis = floor((int(self.wisdom) - 10) / 2)
         self.wis_string = string_bonus(self.wis)
 
         self.charisma = self.stats['CHA']
-        self.cha = floor((int(self.charisma) - 10) / 4)
+        self.cha = floor((int(self.charisma) - 10) / 2)
         self.cha_string = string_bonus(self.cha)
 
         self.stat_bonus = {'STR': self.str, 'DEX': self.dex, 'CON': self.con,
                            'INT': self.int, 'WIS': self.wis, 'CHA': self.cha}
+
+        self.archetype = self.get_archetype(get_attributes(attrs, 'Class'))
 
         self.skills = self.generate_skills(get_attributes(attrs, 'Skill'))
 
@@ -136,6 +138,21 @@ class NPC:
         self.armor = random_weight.choose_one(get_attributes(attrs, 'Armor'))
         self.ac = self.get_ac()
         self.ac_string = self.get_ac_string()
+
+    def get_archetype(self, class_attrs):
+        high_stat = self.get_highest_stat()
+        low_stat = self.get_lowest_stat()
+        class_array = {}
+        print(class_attrs)
+        for arch in class_attrs:
+            if get_tag_value(arch, 'stat') == high_stat:
+                class_array[arch] = 30
+            elif get_tag_value(arch, 'stat') == low_stat:
+                class_array[arch] = 1
+            else:
+                class_array[arch] = 10
+        print(class_array)
+        return random_weight.roll_with_weights(class_array)
 
     def get_ac(self):
         ac = int(get_tag_value(self.armor, 'AC'))
@@ -201,9 +218,15 @@ class NPC:
     def generate_skills(self, skill_attrs):
         skill_count = random_weight.roll_with_weights({4: 6, 5: 2, 6: 1})
         skills = {}
+        class_skills = Attributes.query.filter_by(attribute='Skill').\
+            filter(Attributes.tags.any(tag_value='Fighter')).all()
+        all_skills = random_weight.choose_several(skill_attrs, 4, selection=class_skills)
+        print(all_skills)
         for i in range(skill_count):
-            choice = random_weight.choose_one_with_removal(skill_attrs, list(skills.keys()))
-            skills[choice.value] = string_bonus(self.prof_bonus + self.stat_bonus[get_tag_value(choice, 'skill_stat')])
+            print(i)
+            choice = random_weight.choose_one_with_removal(all_skills, list(skills.keys()))
+            print(choice)
+            skills[choice] = string_bonus(self.prof_bonus + self.stat_bonus[get_tag_value(choice, 'skill_stat')])
 
         return skills
 
@@ -223,12 +246,28 @@ class NPC:
                 big_stat.append(stat)
         return big_stat
 
+    def get_lowest_stat(self):
+        """
+        Gives you a list of the lowest stats. Generally this is one, but it could be more!
+        :return: the lowest score
+        :rtype: list
+        """
+        lowest = 100
+        small_stat = []
+        for stat, value in self.stats.items():
+            if value < lowest:
+                lowest = value
+                small_stat = [stat]
+            elif value == lowest:
+                small_stat.append(stat)
+        return small_stat
+
 
 if __name__ == '__main__':
     my_npc = NPC()
     print('Name: {}'.format(my_npc.name))
     print('Race: {}'.format(my_npc.race))
-    print('Level: {}'.format(my_npc.level))
+    print('Level: {} {}'.format(my_npc.level, my_npc.archetype.value))
     print('Proficiency Bonus: {}'.format(my_npc.prof_bonus))
     print('Armor Class: {}'.format(my_npc.ac_string))
     print('STR: {} ({})| DEX: {} ({})| CON: {} ({})| INT: {} ({})| WIS: {} ({})| CHA: {} ({})'
@@ -240,8 +279,9 @@ if __name__ == '__main__':
                   my_npc.charisma, my_npc.cha_string))
     print('Skills:')
     for skill, bonus in my_npc.skills.items():
-        print('{} {}'.format(skill, bonus))
+        print('{} {}'.format(skill.value, bonus))
     for language in my_npc.languages:
         print(language)
     print('{}. {}'.format(my_npc.main_hand.value, my_npc.damage))
-    print('{}. {}'.format(my_npc.off_hand.value, my_npc.off_damage))
+    if my_npc.off_hand is not None:
+        print('{}. {}'.format(my_npc.off_hand.value, my_npc.off_damage))

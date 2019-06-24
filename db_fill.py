@@ -14,16 +14,29 @@ if __name__ == '__main__':
             print(row['tags'])
             tags_list = json.loads(row['tags'])
             for tag, value in tags_list.items():
-                final_tag = Tags.query.filter_by(tag_name=tag, tag_value=value).first()
-                if final_tag is not None:
-                    attr.tags.append(final_tag)
+                if type(value) is list:
+                    for v in value:
+                        final_tag = Tags.query.filter_by(tag_name=tag, tag_value=v).first()
+                        if final_tag is not None:
+                            attr.tags.append(final_tag)
+                        else:
+                            print('New tag found {}'.format(tag))
+                            new_tag = Tags(tag=tag, value=v)
+                            db.session.add(new_tag)
+                            db.session.commit()
+                            new_tag = Tags.query.filter_by(tag_name=tag, tag_value=v).first()
+                            attr.tags.append(new_tag)
                 else:
-                    print('New tag found {}'.format(tag))
-                    new_tag = Tags(tag=tag, value=value)
-                    db.session.add(new_tag)
-                    db.session.commit()
-                    new_tag = Tags.query.filter_by(tag_name=tag, tag_value=value).first()
-                    attr.tags.append(new_tag)
+                    final_tag = Tags.query.filter_by(tag_name=tag, tag_value=value).first()
+                    if final_tag is not None:
+                        attr.tags.append(final_tag)
+                    else:
+                        print('New tag found {}'.format(tag))
+                        new_tag = Tags(tag=tag, value=value)
+                        db.session.add(new_tag)
+                        db.session.commit()
+                        new_tag = Tags.query.filter_by(tag_name=tag, tag_value=value).first()
+                        attr.tags.append(new_tag)
 
         print('Adding {} to DB'.format(attr))
         db.session.add(attr)

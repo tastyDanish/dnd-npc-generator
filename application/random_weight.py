@@ -56,3 +56,11 @@ def choose_one_with_removal(choices, remove):
         return choose_one(choices)
     new_list = [x for x in choices if x not in remove]
     return choose_one(new_list)
+
+
+def choose_several(choices, number, selection=None):
+    if selection is None:
+        selection = []
+    for i in range(number):
+        selection.append(choose_one_with_removal(choices, selection))
+    return selection

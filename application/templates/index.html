@@ -55,7 +55,7 @@
     <br>
     <b>Skills </b>
     {% for skill, bonus in npc.skills.items() %}
-        {{ skill }} {{bonus}}{{ "," if not loop.last }}
+        {{ skill.value }} {{bonus}}{{ "," if not loop.last }}
     {% endfor %}
     <br>
     <b>Languages </b>
@@ -64,6 +64,9 @@
     {% endfor %}
     <br>
     <b>{{ npc.main_hand.value }}.</b> {{ npc.damage }}
+    {% if npc.off_hand is not none and npc.off_hand.value != 'Shield' %}
+    <br><b>{{ npc.off_hand.value }}.</b> {{ npc.off_damage }}
+    {% endif %}
 </div>
 
 {% endblock %}  
