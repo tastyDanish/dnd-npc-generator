@@ -40,11 +40,16 @@ def get_attr_from_list(attrs, attribute, value):
 
 
 def get_tag_value(my_node, tag_name):
+    tag_values = []
     for tag in my_node.tags:
         if tag.tag_name == tag_name:
-            return tag.tag_value
-    else:
+            tag_values.append(tag.tag_value)
+    if len(tag_values) == 0:
         return None
+    elif len(tag_values) == 1:
+        return tag_values[0]
+    else:
+        return tag_values
 
 
 def get_attr_tag(attrs, attribute, value, tag_name):
