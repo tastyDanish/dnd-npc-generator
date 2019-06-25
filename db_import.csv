@@ -1,10 +1,10 @@
 attribute,value,weight,tags
-Stat,STR,1,"{""Human"": 10, ""Elf"": 5, ""Half-Orc"": 15, ""Half-Elf"": 5, ""Dragonborn"": 15, ""Halfling"": 5, ""Goblin"": 5, ""Dwarf"": 5, ""Tiefling"": 5}"
-Stat,DEX,1,"{""Human"": 10, ""Elf"": 10, ""Half-Orc"": 5, ""Half-Elf"": 5, ""Dragonborn"": 5, ""Halfling"": 10, ""Goblin"": 10, ""Dwarf"": 10, ""Tiefling"": 5}"
-Stat,CON,1,"{""Human"": 10, ""Elf"": 5, ""Half-Orc"": 10, ""Half-Elf"": 5, ""Dragonborn"": 5, ""Halfling"": 5, ""Goblin"": 5, ""Dwarf"": 5, ""Tiefling"": 5}"
-Stat,INT,1,"{""Human"": 10, ""Elf"": 10, ""Half-Orc"": 5, ""Half-Elf"": 5, ""Dragonborn"": 5, ""Halfling"": 5, ""Goblin"": 5, ""Dwarf"": 5, ""Tiefling"": 10}"
-Stat,WIS,1,"{""Human"": 10, ""Elf"": 5, ""Half-Orc"": 5, ""Half-Elf"": 5, ""Dragonborn"": 5, ""Halfling"": 5, ""Goblin"": 5, ""Dwarf"": 5, ""Tiefling"": 5}"
-Stat,CHA,1,"{""Human"": 10, ""Elf"": 5, ""Half-Orc"": 5, ""Half-Elf"": 10, ""Dragonborn"": 10, ""Halfling"": 5, ""Goblin"": 5, ""Dwarf"": 5, ""Tiefling"": 15}"
+Stat,STR,1,"{""Human"": 10, ""Elf"": 5, ""Half-Orc"": 15, ""Half-Elf"": 5, ""Dragonborn"": 15, ""Halfling"": 5, ""Goblin"": 5, ""Dwarf"": 5, ""Tiefling"": 5, ""Gnome"": 5}"
+Stat,DEX,1,"{""Human"": 10, ""Elf"": 10, ""Half-Orc"": 5, ""Half-Elf"": 5, ""Dragonborn"": 5, ""Halfling"": 10, ""Goblin"": 10, ""Dwarf"": 10, ""Tiefling"": 5, ""Gnome"": 10}"
+Stat,CON,1,"{""Human"": 10, ""Elf"": 5, ""Half-Orc"": 10, ""Half-Elf"": 5, ""Dragonborn"": 5, ""Halfling"": 5, ""Goblin"": 5, ""Dwarf"": 5, ""Tiefling"": 5, ""Gnome"": 5}"
+Stat,INT,1,"{""Human"": 10, ""Elf"": 10, ""Half-Orc"": 5, ""Half-Elf"": 5, ""Dragonborn"": 5, ""Halfling"": 5, ""Goblin"": 5, ""Dwarf"": 5, ""Tiefling"": 10, ""Gnome"": 15}"
+Stat,WIS,1,"{""Human"": 10, ""Elf"": 5, ""Half-Orc"": 5, ""Half-Elf"": 5, ""Dragonborn"": 5, ""Halfling"": 5, ""Goblin"": 5, ""Dwarf"": 5, ""Tiefling"": 5, ""Gnome"": 5}"
+Stat,CHA,1,"{""Human"": 10, ""Elf"": 5, ""Half-Orc"": 5, ""Half-Elf"": 10, ""Dragonborn"": 10, ""Halfling"": 5, ""Goblin"": 5, ""Dwarf"": 5, ""Tiefling"": 15, ""Gnome"": 5}"
 Skill,Athletics,1,"{""skill_stat"": ""STR"", ""class"": ""Fighter""}"
 Skill,Acrobatics,1,"{""skill_stat"": ""DEX"", ""class"": ""Thief""}"
 Skill,Sleight Of Hand,1,"{""skill_stat"": ""DEX"", ""class"": ""Thief""}"
@@ -31,14 +31,15 @@ Language,Gnomish,1,
 Language,Halfling,1,
 Language,Draconic,1,
 Race,Human,5,"{""stat_bonus_1"": ""ANY 2""}"
-Race,Elf,5,"{""stat_bonus_2"": ""DEX"", ""stat_bonus_1"": ""INT""}"
-Race,Half-Orc,5,"{""stat_bonus_2"": ""STR"", ""stat_bonus_1"": ""CON""}"
-Race,Half-Elf,5,"{""stat_bonus_2"": ""CHA"", ""stat_bonus_1"": ""ANY 2""}"
-Race,Dragonborn,5,"{""stat_bonus_2"": ""STR"", ""stat_bonus_1"": ""CHA""}"
-Race,Halfling,5,"{""stat_bonus_2"": ""DEX"", ""stat_bonus_1"": ""CHA""}"
-Race,Goblin,1,"{""stat_bonus_2"": ""DEX"", ""stat_bonus_1"": ""CON""}"
-Race,Dwarf,5,"{""stat_bonus_2"": ""CON"", ""stat_bonus_1"": ""WIS""}"
-Race,Tiefling,5,"{""stat_bonus_2"": ""CHA"", ""stat_bonus_1"": ""INT""}"
+Race,Elf,5,"{""stat_bonus_2"": ""DEX"", ""stat_bonus_1"": ""INT"", ""speed"": ""30 feet""}"
+Race,Half-Orc,5,"{""stat_bonus_2"": ""STR"", ""stat_bonus_1"": ""CON"", ""speed"": ""30 feet""}"
+Race,Half-Elf,5,"{""stat_bonus_2"": ""CHA"", ""stat_bonus_1"": ""ANY 2"", ""speed"": ""30 feet""}"
+Race,Dragonborn,5,"{""stat_bonus_2"": ""STR"", ""stat_bonus_1"": ""CHA"", ""speed"": ""30 feet""}"
+Race,Halfling,5,"{""stat_bonus_2"": ""DEX"", ""stat_bonus_1"": ""CHA"", ""speed"": ""25 feet""}"
+Race,Goblin,1,"{""stat_bonus_2"": ""DEX"", ""stat_bonus_1"": ""CON"", ""speed"": ""30 feet""}"
+Race,Dwarf,5,"{""stat_bonus_2"": ""CON"", ""stat_bonus_1"": ""WIS"", ""speed"": ""30 feet""}"
+Race,Tiefling,5,"{""stat_bonus_2"": ""CHA"", ""stat_bonus_1"": ""INT"", ""speed"": ""25 feet""}"
+Race,Gnome,5,"{""stat_bonus_2"": ""INT"", ""stat_bonus_1"": ""DEX"", ""speed"": ""25 feet""}"
 Name,Carl,1,
 Name,Francine,1,
 Name,Francis,1,

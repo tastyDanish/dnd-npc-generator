@@ -91,9 +91,12 @@ class NPC:
         attrs = Attributes.query.all()
         self.name = random_weight.choose_one(get_list(attrs, 'Name'))
 
-        self.race = random_weight.choose_one(get_list(attrs, 'Race'))
+        self.race = random_weight.choose_one(get_attributes(attrs, 'Race'))
+        self.speed = get_tag_value(self.race, 'speed')
+        # TODO: add senses to db and add them here
 
-        self.stats = self.generate_stats(get_attributes(attrs, 'Stat'), get_attr_from_list(attrs, 'Race', self.race))
+        self.stats = self.generate_stats(get_attributes(attrs, 'Stat'),
+                                         get_attr_from_list(attrs, 'Race', self.race.value))
 
         self.strength = self.stats['STR']
         self.str = floor((int(self.strength) - 10) / 2)
@@ -123,11 +126,15 @@ class NPC:
                            'INT': self.int, 'WIS': self.wis, 'CHA': self.cha}
 
         self.archetype = self.get_archetype(get_attributes(attrs, 'Class'))
+        # TODO: add saving throws to the database and load them here
 
         self.skills = self.generate_skills(get_attributes(attrs, 'Skill'))
 
+        # TODO: add racial tags to auto include languages
         self.languages = ['Common', random_weight.choose_one(get_list(attrs, 'Language'))]
 
+        # TODO: clean up for multiple weapons
+        # TODO: add archetype tags to weapons and armor
         self.main_hand = random_weight.choose_one(get_attributes(attrs, 'Weapon'))
         self.damage = self.get_damage_string(self.main_hand)
 
@@ -202,12 +209,12 @@ class NPC:
             .format(to_hit, dice, dmg_bonus, get_tag_value(weapon_attr, 'damage_type'))
 
     def generate_stats(self, stat_attrs, race_attr):
-        race_stat_array = {'STR': int(get_attr_tag(stat_attrs, 'Stat', 'STR', self.race)),
-                           'DEX': int(get_attr_tag(stat_attrs, 'Stat', 'DEX', self.race)),
-                           'CON': int(get_attr_tag(stat_attrs, 'Stat', 'CON', self.race)),
-                           'INT': int(get_attr_tag(stat_attrs, 'Stat', 'INT', self.race)),
-                           'WIS': int(get_attr_tag(stat_attrs, 'Stat', 'WIS', self.race)),
-                           'CHA': int(get_attr_tag(stat_attrs, 'Stat', 'CHA', self.race))}
+        race_stat_array = {'STR': int(get_attr_tag(stat_attrs, 'Stat', 'STR', self.race.value)),
+                           'DEX': int(get_attr_tag(stat_attrs, 'Stat', 'DEX', self.race.value)),
+                           'CON': int(get_attr_tag(stat_attrs, 'Stat', 'CON', self.race.value)),
+                           'INT': int(get_attr_tag(stat_attrs, 'Stat', 'INT', self.race.value)),
+                           'WIS': int(get_attr_tag(stat_attrs, 'Stat', 'WIS', self.race.value)),
+                           'CHA': int(get_attr_tag(stat_attrs, 'Stat', 'CHA', self.race.value))}
         my_stats = {}
         remove_stats = []
         for i, stat in enumerate(_stat_array):
@@ -222,7 +229,7 @@ class NPC:
         stat_bonus_1 = get_tag_value(race_attr, 'stat_bonus_1')
         if stat_bonus_1 is not None:
             if stat_bonus_1 == 'ANY 2':
-                if self.race == 'Human':
+                if self.race.value == 'Human':
                     my_stats = bonus_two_highest(my_stats)
                 else:
                     my_stats = bonus_two_highest(my_stats, exclude='CHA')
@@ -284,6 +291,7 @@ if __name__ == '__main__':
     print('Proficiency Bonus: {}'.format(my_npc.prof_bonus))
     print('Armor Class: {}'.format(my_npc.ac_string))
     print('HP: {}'.format(my_npc.health))
+    print('Speed: {}'.format(my_npc.speed))
     print('STR: {} ({})| DEX: {} ({})| CON: {} ({})| INT: {} ({})| WIS: {} ({})| CHA: {} ({})'
           .format(my_npc.strength, my_npc.str_string,
                   my_npc.dexterity, my_npc.dex_string,

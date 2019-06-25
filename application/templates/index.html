@@ -8,9 +8,10 @@
     </div>
     <hr>
     <b>Name</b> {{ npc.name }}<br>
-    <i>Medium humanoid ({{ npc.race }})</i><br>
-    <b>Armor Class </b> {{ npc.ac_string }}<br>
-    <b>Hit Points </b> {{ npc.health }}<br><br>
+    <i>Medium humanoid ({{ npc.race.value }})</i><br>
+    <b>Armor Class</b> {{ npc.ac_string }}<br>
+    <b>Hit Points</b> {{ npc.health }}<br>
+    <b>Speed</b> {{ npc.speed }}<br><br>
     <table>
         <tr>
             <td style="text-align: center;">
