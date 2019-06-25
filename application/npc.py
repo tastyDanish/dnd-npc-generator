@@ -215,9 +215,7 @@ class NPC:
             my_stats[chosen_stat] = stat
             remove_stats.append(chosen_stat)
 
-        print(race_attr)
         stat_bonus_2 = get_tag_value(race_attr, 'stat_bonus_2')
-        print(stat_bonus_2)
         if stat_bonus_2 is not None:
             my_stats[stat_bonus_2] = my_stats[stat_bonus_2] + 2
 
