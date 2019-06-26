@@ -23,23 +23,30 @@ Skill,Deception,1,"{""skill_stat"": ""CHA"", ""class"": ""Thief""}"
 Skill,Intimidation,1,"{""skill_stat"": ""CHA"", ""class"": ""Fighter""}"
 Skill,Performance,1,"{""skill_stat"": ""CHA"", ""class"": ""Thief""}"
 Skill,Persuasion,1,"{""skill_stat"": ""CHA"", ""class"": ""Thief""}"
-Language,Elvish,1,
-Language,Goblin,1,
-Language,Dwarvish,1,
-Language,Orc,1,
-Language,Gnomish,1,
-Language,Halfling,1,
-Language,Draconic,1,
-Race,Human,5,"{""stat_bonus_1"": ""ANY 2"", ""speed"": ""30 feet""}"
-Race,Elf,5,"{""stat_bonus_2"": ""DEX"", ""stat_bonus_1"": ""INT"", ""speed"": ""30 feet""}"
-Race,Half-Orc,5,"{""stat_bonus_2"": ""STR"", ""stat_bonus_1"": ""CON"", ""speed"": ""30 feet""}"
-Race,Half-Elf,5,"{""stat_bonus_2"": ""CHA"", ""stat_bonus_1"": ""ANY 2"", ""speed"": ""30 feet""}"
-Race,Dragonborn,5,"{""stat_bonus_2"": ""STR"", ""stat_bonus_1"": ""CHA"", ""speed"": ""30 feet""}"
-Race,Halfling,5,"{""stat_bonus_2"": ""DEX"", ""stat_bonus_1"": ""CHA"", ""speed"": ""25 feet""}"
-Race,Goblin,1,"{""stat_bonus_2"": ""DEX"", ""stat_bonus_1"": ""CON"", ""speed"": ""30 feet""}"
-Race,Dwarf,5,"{""stat_bonus_2"": ""CON"", ""stat_bonus_1"": ""WIS"", ""speed"": ""30 feet""}"
-Race,Tiefling,5,"{""stat_bonus_2"": ""CHA"", ""stat_bonus_1"": ""INT"", ""speed"": ""30 feet""}"
-Race,Gnome,5,"{""stat_bonus_2"": ""INT"", ""stat_bonus_1"": ""DEX"", ""speed"": ""25 feet""}"
+Language,Elvish,10,"{""race"": [""Elf"", ""Half-Elf""]}"
+Language,Goblin,5,"{""race"": ""Goblin""}"
+Language,Dwarvish,10,"{""race"": ""Dwarf""}"
+Language,Orc,10,"{""race"": ""Half-Orc""}"
+Language,Gnomish,10,"{""race"": ""Gnome""}"
+Language,Halfling,10,"{""race"": ""Halfling""}"
+Language,Draconic,10,"{""race"": ""Dragonborn""}"
+Language,Giant,1,
+Language,Abyssal,1,
+Language,Celestial,1,
+Language,Deep Speech,1,
+Language,Infernal,1,"{""race"": ""Tiefling""}"
+Language,Sylvan,1,
+Language,Undercommon,1,
+Race,Human,5,"{""stat_bonus_1"": ""ANY 2"", ""speed"": ""30 feet"", ""extra_language"": ""True""}"
+Race,Elf,5,"{""stat_bonus_2"": ""DEX"", ""stat_bonus_1"": ""INT"", ""speed"": ""30 feet"", ""extra_language"": ""True""}"
+Race,Half-Orc,5,"{""stat_bonus_2"": ""STR"", ""stat_bonus_1"": ""CON"", ""speed"": ""30 feet"", ""extra_language"": ""False""}"
+Race,Half-Elf,5,"{""stat_bonus_2"": ""CHA"", ""stat_bonus_1"": ""ANY 2"", ""speed"": ""30 feet"", ""extra_language"": ""True""}"
+Race,Dragonborn,5,"{""stat_bonus_2"": ""STR"", ""stat_bonus_1"": ""CHA"", ""speed"": ""30 feet"", ""extra_language"": ""False""}"
+Race,Halfling,5,"{""stat_bonus_2"": ""DEX"", ""stat_bonus_1"": ""CHA"", ""speed"": ""25 feet"", ""extra_language"": ""False""}"
+Race,Goblin,1,"{""stat_bonus_2"": ""DEX"", ""stat_bonus_1"": ""CON"", ""speed"": ""30 feet"", ""extra_language"": ""False""}"
+Race,Dwarf,5,"{""stat_bonus_2"": ""CON"", ""stat_bonus_1"": ""WIS"", ""speed"": ""30 feet"", ""extra_language"": ""False""}"
+Race,Tiefling,5,"{""stat_bonus_2"": ""CHA"", ""stat_bonus_1"": ""INT"", ""speed"": ""30 feet"", ""extra_language"": ""False""}"
+Race,Gnome,5,"{""stat_bonus_2"": ""INT"", ""stat_bonus_1"": ""DEX"", ""speed"": ""25 feet"", ""extra_language"": ""False""}"
 Name,Carl,1,
 Name,Francine,1,
 Name,Francis,1,

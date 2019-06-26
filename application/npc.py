@@ -11,8 +11,11 @@ _stat_array = [15, 14, 13, 12, 10, 8]
 
 
 def get_list(all_attributes, attribute):
-    all_items = [x for x in all_attributes if x.attribute == attribute]
-    return [x.value for x in all_items]
+    if all_attributes is None:
+        return None
+    else:
+        all_items = [x for x in all_attributes if x.attribute == attribute]
+        return [x.value for x in all_items]
 
 
 def get_list_and_weight(all_attributes, attribute):
@@ -131,7 +134,7 @@ class NPC:
         self.skills = self.generate_skills(get_attributes(attrs, 'Skill'))
 
         # TODO: add racial tags to auto include languages
-        self.languages = ['Common', random_weight.choose_one(get_list(attrs, 'Language'))]
+        self.languages = self.generate_languages(get_list_and_weight(attrs, 'Language'))
 
         # TODO: clean up for multiple weapons
         # TODO: add archetype tags to weapons and armor
@@ -174,6 +177,19 @@ class NPC:
                 .format(saving_choice.value, string_bonus(self.prof_bonus +
                                                           self.stat_bonus[get_tag_value(saving_choice, 'stat')]))
         return saving_string[1:-1]
+
+    def generate_languages(self, lang_dict):
+        # Everyone knows common
+        languages = ['Common']
+        race_lang = get_list(Attributes.query.filter_by(attribute='Language').filter(
+            Attributes.tags.any(tag_name='race', tag_value=self.race.value)).all(), 'Language')
+        if race_lang is not None:
+            languages = languages + race_lang
+        if get_tag_value(self.race, 'extra_language') == 'True':
+            languages.append(random_weight.roll_with_weights_removal(lang_dict, languages))
+        if randint(1, 5) == 1:
+            languages.append(random_weight.roll_with_weights_removal(lang_dict, languages))
+        return languages
 
     def calculate_health(self):
         health = 0
