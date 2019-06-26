@@ -3,10 +3,11 @@ Author: Peter Lansdaal
 Date 2019-06-22
 """
 from application import random_weight, db
-from application.models import Attributes
+from application.models import Attributes, Tags
 from math import floor, ceil
 from random import randint
 
+# TODO: More stat arrays and weights for more stat variation
 _stat_array = [15, 14, 13, 12, 10, 8]
 
 
@@ -21,6 +22,10 @@ def get_list(all_attributes, attribute):
 def get_list_and_weight(all_attributes, attribute):
     all_items = [x for x in all_attributes if x.attribute == attribute]
     return dict(zip([x.value for x in all_items], [x.weight for x in all_items]))
+
+def get_attr_and_weight(all_attributes, attribute):
+    all_items = [x for x in all_attributes if x.attribute == attribute]
+    return dict(zip([x for x in all_items], [x.weight for x in all_items]))
 
 
 def get_attributes(all_attributes, attribute):
@@ -50,7 +55,12 @@ def get_tag_value(my_node, tag_name):
     if len(tag_values) == 0:
         return None
     elif len(tag_values) == 1:
-        return tag_values[0]
+        if tag_values[0] == "True":
+            return True
+        elif tag_values[0] == "False":
+            return False
+        else:
+            return tag_values[0]
     else:
         return tag_values
 
@@ -86,6 +96,8 @@ def bonus_two_highest(stat_array, exclude=None):
     return stat_array
 
 
+# TODO: update to use the query object not a list of attributes.
+# That will let you filter on the query instead of hit the db again
 class NPC:
     def __init__(self, level=1):
         self.level = level
@@ -93,7 +105,10 @@ class NPC:
         attrs = Attributes.query.all()
         self.name = random_weight.choose_one(get_list(attrs, 'Name'))
 
+        # TODO: add more race specifics. e.g. elves get proficiency to darkvision
+        # TODO: specify sub-races and give benefits
         self.race = self.generate_race(get_attributes(attrs, 'Race'))
+        self.size = get_tag_value(self.race, 'size')
         self.speed = get_tag_value(self.race, 'speed')
         # TODO: add senses to db and add them here
 
@@ -133,25 +148,14 @@ class NPC:
 
         self.skills = self.generate_skills(get_attributes(attrs, 'Skill'))
 
-        # TODO: add racial tags to auto include languages
         self.languages = self.generate_languages(get_list_and_weight(attrs, 'Language'))
 
-        # TODO: clean up for multiple weapons
-        # TODO: add archetype tags to weapons and armor
-        self.main_hand = random_weight.choose_one(get_attributes(attrs, 'Weapon'))
-        self.damage = self.get_damage_string(self.main_hand)
+        # TODO: fix shield logic
+        # TODO: add a duel-weilding flag of some kind?
+        self.weapons = self.generate_weapons()
+        self.shield = self.has_shield()
 
-        if get_tag_value(self.main_hand, 'hand') != 'two':
-            if self.str >= self.dex:
-                self.off_hand = get_attr_from_list(attrs, 'Shield', 'Shield')
-                self.off_damage = None
-            else:
-                self.off_hand = get_attr_from_list(attrs, 'Weapon', 'Dagger')
-                self.off_damage = self.get_damage_string(self.off_hand, off=True)
-        else:
-            self.off_hand = None
-            self.off_damage = None
-        self.armor = random_weight.choose_one(get_attributes(attrs, 'Armor'))
+        self.armor = self.generate_armor()
         self.ac = self.get_ac()
         self.ac_string = self.get_ac_string()
 
@@ -185,11 +189,76 @@ class NPC:
             Attributes.tags.any(tag_name='race', tag_value=self.race.value)).all(), 'Language')
         if race_lang is not None:
             languages = languages + race_lang
-        if get_tag_value(self.race, 'extra_language') == 'True':
+        if get_tag_value(self.race, 'extra_language'):
             languages.append(random_weight.roll_with_weights_removal(lang_dict, languages))
         if randint(1, 5) == 1:
             languages.append(random_weight.roll_with_weights_removal(lang_dict, languages))
         return languages
+
+    def generate_weapons(self):
+        # check to see if we need a dex weapon
+        if self.stats['DEX'] > self.stats['STR']:
+            weapon_list = Attributes.query.filter_by(attribute='Weapon').filter(
+                (Attributes.tags.any(tag_name='arch', tag_value=self.archetype.value)) &
+                (Attributes.tags.any(tag_name='finesse', tag_value='True'))
+            ).all()
+            stat_bonus = self.stat_bonus['DEX']
+        else:
+            if self.size == "small":
+                weapon_list = Attributes.query.filter_by(attribute='Weapon').filter(
+                    Attributes.tags.any(tag_name='arch', tag_value=self.archetype.value)
+                ).all()
+            else:
+                weapon_list = Attributes.query.filter_by(attribute='Weapon').filter(
+                    (Attributes.tags.any(tag_name='arch', tag_value=self.archetype.value)) &
+                    (Attributes.tags.any(Tags.tag_value.notilike('heavy')))
+                ).all()
+            stat_bonus = self.stat_bonus['STR']
+        weapon_count = random_weight.roll_with_weights({1: 5, 2: 2, 3:1})
+
+        weapon_dict = get_attr_and_weight(weapon_list, 'Weapon')
+        weapons = {}
+        for i in range(weapon_count):
+            if len(weapons.keys()) == len(weapon_dict.keys()):
+                continue
+            wep_choice = random_weight.roll_with_weights(weapon_dict)
+            wep_name = '<b>{}</b>'.format(wep_choice.value)
+            attack_type_str = ''
+            reach_str = ''
+            new_bonus = None
+            if get_tag_value(wep_choice, 'attack_type') == 'ranged':
+                attack_type_str = '<i>Ranged Weapon Attack:</i>'
+                reach_str = 'range {}'.format(get_tag_value(wep_choice, 'range'))
+                if get_tag_value(wep_choice, 'thrown') and self.stats['STR'] > self.stats['DEX']:
+                    new_bonus = self.stat_bonus['STR']
+                else:
+                    new_bonus = self.stat_bonus['DEX']
+            elif get_tag_value(wep_choice, 'attack_type') == 'melee':
+                if get_tag_value(wep_choice, 'thrown'):
+                    attack_type_str = '<i>Melee or Ranged Weapon Attack:</i>'
+                    reach_str = 'reach {} or range {}'.format(get_tag_value(wep_choice, 'reach'),
+                                                              get_tag_value(wep_choice, 'range'))
+                else:
+                    attack_type_str = '<i>Melee Weapon Attack:</i>'
+                    reach_str = 'reach {}'.format(get_tag_value(wep_choice, 'reach'))
+            if new_bonus is None:
+                new_bonus = stat_bonus
+            hit_bonus = string_bonus(self.prof_bonus + new_bonus)
+            dmg_string = '{}{}'.format(get_tag_value(wep_choice, 'damage'), string_bonus(new_bonus))
+            wep_string = '{}. {} {} to hit, {}, one target. <i>Hit:</i> {} {} damage.'\
+                .format(wep_name, attack_type_str, hit_bonus, reach_str, dmg_string,
+                        get_tag_value(wep_choice, 'damage_type'))
+            weapons[wep_choice] = wep_string
+        return weapons
+
+    def has_shield(self):
+        if self.archetype.value in ['Wizard', 'Thief']:
+            return False
+        for weapon, string in self.weapons.items():
+            if get_tag_value(weapon, 'two_handed'):
+                return False
+        else:
+            return True
 
     def calculate_health(self):
         health = 0
@@ -214,22 +283,44 @@ class NPC:
                 class_array[arch] = 10
         return random_weight.roll_with_weights(class_array)
 
+    def generate_armor(self):
+        armor_query = Attributes.query.filter_by(attribute='Armor').filter(
+            Attributes.tags.any(tag_name='arch', tag_value=self.archetype.value))
+        if 'Stealth' in [x.value for x in self.skills.keys()]:
+            armor_query = armor_query.filter(
+                (Attributes.tags.any(Tags.tag_name.notilike('stealth_dis')))
+            )
+        if self.stats['STR'] < 15:
+            armor_query = armor_query.filter(
+                (Attributes.tags.any(Tags.tag_value.notilike('15')))
+            )
+        if self.stats['STR'] < 13:
+            armor_query = armor_query.filter(
+                (Attributes.tags.any(Tags.tag_value.notilike('13')))
+            )
+        if self.stat_bonus['DEX'] > 2:
+            armor_query = armor_query.filter(
+                (Attributes.tags.any(tag_name='armor_type', tag_value='light'))
+            )
+        armor_dict = get_attr_and_weight(armor_query.all(), 'Armor')
+        return random_weight.roll_with_weights(armor_dict)
+
     def get_ac(self):
         ac = int(get_tag_value(self.armor, 'AC'))
         if get_tag_value(self.armor, 'armor_type') == 'light':
             ac = ac + self.stat_bonus['DEX']
         elif get_tag_value(self.armor, 'armor_type') == 'medium':
             if self.stat_bonus['DEX'] <= 2:
-                ac = ac + self.stat_bonus['DEX']
+                ac += self.stat_bonus['DEX']
             else:
-                ac = ac + 2
-        if self.off_hand is not None and self.off_hand.value == 'Shield':
-            ac = ac + 2
+                ac += 2
+        if self.shield:
+            ac += 2
         return ac
 
     def get_ac_string(self):
         armor_string = '{} ({}'.format(self.ac, self.armor.value)
-        if self.off_hand is not None and self.off_hand.value == 'Shield':
+        if self.shield:
             armor_string = armor_string + ', Shield)'
         else:
             armor_string = armor_string + ')'
@@ -276,7 +367,10 @@ class NPC:
         return my_stats
 
     def generate_skills(self, skill_attrs):
+        print(self.stats)
         skill_count = random_weight.roll_with_weights({3: 6, 4: 2, 5: 1})
+        if self.archetype == 'Wizard':
+            skill_count += 1
         skills = {}
         # Grab our class skills
         class_skills = Attributes.query.filter_by(attribute='Skill'). \
@@ -315,7 +409,11 @@ class NPC:
                 big_stat = [stat]
             elif value == highest:
                 big_stat.append(stat)
-        return random_weight.choose_one(big_stat)
+        # This part breaks sometimes. If it does, just return a random stat. Gives the NPC a rogue element.
+        try:
+            return random_weight.choose_one(big_stat)
+        except IndexError:
+            return random_weight.choose_one(list(self.stats.keys()))
 
     def get_lowest_stat(self):
         """
@@ -356,6 +454,5 @@ if __name__ == '__main__':
         print('{} {}'.format(skill.value, bonus))
     for language in my_npc.languages:
         print(language)
-    print('{}. {}'.format(my_npc.main_hand.value, my_npc.damage))
-    if my_npc.off_hand is not None:
-        print('{}. {}'.format(my_npc.off_hand.value, my_npc.off_damage))
+    for key, val in my_npc.weapons.items():
+        print(val)

@@ -11,7 +11,6 @@ if __name__ == '__main__':
                           value=row['value'],
                           weight=row['weight'])
         if type(row['tags']) is str:
-            print(row['tags'])
             tags_list = json.loads(row['tags'])
             for tag, value in tags_list.items():
                 if type(value) is list:
@@ -20,7 +19,7 @@ if __name__ == '__main__':
                         if final_tag is not None:
                             attr.tags.append(final_tag)
                         else:
-                            print('New tag found {}'.format(tag))
+                            print('New tag found {}: {}'.format(tag, v))
                             new_tag = Tags(tag=tag, value=v)
                             db.session.add(new_tag)
                             db.session.commit()
@@ -31,7 +30,7 @@ if __name__ == '__main__':
                     if final_tag is not None:
                         attr.tags.append(final_tag)
                     else:
-                        print('New tag found {}'.format(tag))
+                        print('New tag found {}: {}'.format(tag, value))
                         new_tag = Tags(tag=tag, value=value)
                         db.session.add(new_tag)
                         db.session.commit()
