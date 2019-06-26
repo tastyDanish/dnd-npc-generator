@@ -65,7 +65,6 @@ def bonus_two_highest(stat_array, exclude=None):
     second_stat = None
     for key, val in stat_array.items():
         if exclude is not None and exclude == key:
-            print('KEY IS {}'.format(key))
             continue
         if val % 2 == 1 and val > first_high:
             first_high = val
@@ -91,7 +90,7 @@ class NPC:
         attrs = Attributes.query.all()
         self.name = random_weight.choose_one(get_list(attrs, 'Name'))
 
-        self.race = random_weight.choose_one(get_attributes(attrs, 'Race'))
+        self.race = self.generate_race(get_attributes(attrs, 'Race'))
         self.speed = get_tag_value(self.race, 'speed')
         # TODO: add senses to db and add them here
 
@@ -126,7 +125,8 @@ class NPC:
                            'INT': self.int, 'WIS': self.wis, 'CHA': self.cha}
 
         self.archetype = self.get_archetype(get_attributes(attrs, 'Class'))
-        # TODO: add saving throws to the database and load them here
+
+        self.saving = self.generate_saving()
 
         self.skills = self.generate_skills(get_attributes(attrs, 'Skill'))
 
@@ -153,6 +153,27 @@ class NPC:
         self.ac_string = self.get_ac_string()
 
         self.health = self.calculate_health()
+
+    @staticmethod
+    def generate_race(race_attrs):
+        race_dict = dict(zip(race_attrs, [x.weight for x in race_attrs]))
+        return random_weight.roll_with_weights(race_dict)
+
+    def generate_saving(self):
+        class_saving = Attributes.query.filter_by(attribute='Saving').\
+            filter(Attributes.tags.any(tag_value=self.archetype.value)).all()
+        saving_number = random_weight.roll_with_weights({0: 2, 1: 5, 2: 5, 3: 2})
+        saving_string = ''
+        saving_list = []
+        if saving_number == 0:
+            return None
+        for i in range(saving_number):
+            saving_choice = random_weight.choose_one_with_removal(class_saving, saving_list)
+            saving_list.append(saving_choice)
+            saving_string = saving_string + ' {} {},'\
+                .format(saving_choice.value, string_bonus(self.prof_bonus +
+                                                          self.stat_bonus[get_tag_value(saving_choice, 'stat')]))
+        return saving_string[1:-1]
 
     def calculate_health(self):
         health = 0
@@ -239,20 +260,34 @@ class NPC:
         return my_stats
 
     def generate_skills(self, skill_attrs):
-        skill_count = random_weight.roll_with_weights({4: 6, 5: 2, 6: 1})
+        skill_count = random_weight.roll_with_weights({3: 6, 4: 2, 5: 1})
         skills = {}
-        class_skills = Attributes.query.filter_by(attribute='Skill').\
-            filter(Attributes.tags.any(tag_value='Fighter')).all()
-        all_skills = random_weight.choose_several(skill_attrs, 4, selection=class_skills)
+        # Grab our class skills
+        class_skills = Attributes.query.filter_by(attribute='Skill'). \
+            filter(Attributes.tags.any(tag_value=self.archetype.value)).all()
+        # Grab a skill that matches the NPCs highest stat
+        select = 4
+        if self.get_highest_stat() is not 'CON':
+            stat_skill = random_weight.choose_one(
+                Attributes.query.filter_by(attribute='Skill').filter(
+                    Attributes.tags.any(tag_name='skill_stat', tag_value=self.get_highest_stat())).all())
+            skills[stat_skill] = string_bonus(
+                self.prof_bonus + self.stat_bonus[get_tag_value(stat_skill, 'skill_stat')])
+            if stat_skill not in class_skills:
+                select = 3
+        # grab some other random skills to add to our pool of possible skills
+        all_skills = random_weight.choose_several(skill_attrs, select, selection=class_skills)
+
+        # Give the NPC a skill with their highest stat
+
         for i in range(skill_count):
             choice = random_weight.choose_one_with_removal(all_skills, list(skills.keys()))
             skills[choice] = string_bonus(self.prof_bonus + self.stat_bonus[get_tag_value(choice, 'skill_stat')])
-
         return skills
 
     def get_highest_stat(self):
         """
-        Gives you a list of the highest stats. Generally this is a single value, but sometimes its two or more!
+        Gives you a list of the highest stats. If it's a tie, choose one value at random
         :return: the highest stats
         :rtype: list
         """
@@ -264,7 +299,7 @@ class NPC:
                 big_stat = [stat]
             elif value == highest:
                 big_stat.append(stat)
-        return big_stat
+        return random_weight.choose_one(big_stat)
 
     def get_lowest_stat(self):
         """
@@ -286,7 +321,7 @@ class NPC:
 if __name__ == '__main__':
     my_npc = NPC()
     print('Name: {}'.format(my_npc.name))
-    print('Race: {}'.format(my_npc.race))
+    print('Race: {}'.format(my_npc.race.value))
     print('Level: {} {}'.format(my_npc.level, my_npc.archetype.value))
     print('Proficiency Bonus: {}'.format(my_npc.prof_bonus))
     print('Armor Class: {}'.format(my_npc.ac_string))
@@ -299,6 +334,7 @@ if __name__ == '__main__':
                   my_npc.intellect, my_npc.int_string,
                   my_npc.wisdom, my_npc.wis_string,
                   my_npc.charisma, my_npc.cha_string))
+    print('Saving Throws: {}'.format(my_npc.saving))
     print('Skills:')
     for skill, bonus in my_npc.skills.items():
         print('{} {}'.format(skill.value, bonus))

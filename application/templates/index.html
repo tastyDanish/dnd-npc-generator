@@ -54,6 +54,10 @@
             </td>
         </tr>
     </table>
+    {% if npc.saving is not none %}
+        <br>
+        <b>Saving Throws </b>{{ npc.saving }}
+    {% endif %}
     <br>
     <b>Skills </b>
     {% for skill, bonus in npc.skills.items() %}

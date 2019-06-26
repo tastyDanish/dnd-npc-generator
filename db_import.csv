@@ -30,7 +30,7 @@ Language,Orc,1,
 Language,Gnomish,1,
 Language,Halfling,1,
 Language,Draconic,1,
-Race,Human,5,"{""stat_bonus_1"": ""ANY 2""}"
+Race,Human,5,"{""stat_bonus_1"": ""ANY 2"", ""speed"": ""30 feet""}"
 Race,Elf,5,"{""stat_bonus_2"": ""DEX"", ""stat_bonus_1"": ""INT"", ""speed"": ""30 feet""}"
 Race,Half-Orc,5,"{""stat_bonus_2"": ""STR"", ""stat_bonus_1"": ""CON"", ""speed"": ""30 feet""}"
 Race,Half-Elf,5,"{""stat_bonus_2"": ""CHA"", ""stat_bonus_1"": ""ANY 2"", ""speed"": ""30 feet""}"
@@ -38,7 +38,7 @@ Race,Dragonborn,5,"{""stat_bonus_2"": ""STR"", ""stat_bonus_1"": ""CHA"", ""spee
 Race,Halfling,5,"{""stat_bonus_2"": ""DEX"", ""stat_bonus_1"": ""CHA"", ""speed"": ""25 feet""}"
 Race,Goblin,1,"{""stat_bonus_2"": ""DEX"", ""stat_bonus_1"": ""CON"", ""speed"": ""30 feet""}"
 Race,Dwarf,5,"{""stat_bonus_2"": ""CON"", ""stat_bonus_1"": ""WIS"", ""speed"": ""30 feet""}"
-Race,Tiefling,5,"{""stat_bonus_2"": ""CHA"", ""stat_bonus_1"": ""INT"", ""speed"": ""25 feet""}"
+Race,Tiefling,5,"{""stat_bonus_2"": ""CHA"", ""stat_bonus_1"": ""INT"", ""speed"": ""30 feet""}"
 Race,Gnome,5,"{""stat_bonus_2"": ""INT"", ""stat_bonus_1"": ""DEX"", ""speed"": ""25 feet""}"
 Name,Carl,1,
 Name,Francine,1,
@@ -56,3 +56,9 @@ Class,Fighter,1,"{""stat"": ""STR"", ""health"": 10}"
 Class,Thief,1,"{""stat"": ""DEX"", ""health"": 8}"
 Class,Cleric,1,"{""stat"": ""WIS"", ""health"": 8}"
 Class,Wizard,1,"{""stat"": ""INT"", ""health"": 6}"
+Saving,Str,1,"{""stat"": ""STR"", ""class"": [""Fighter"", ""Cleric""]}"
+Saving,Dex,1,"{""stat"": ""DEX"", ""class"": [""Fighter"",""Thief""]}"
+Saving,Con,1,"{""stat"": ""CON"", ""class"": [""Fighter"", ""Cleric""]}"
+Saving,Int,1,"{""stat"": ""INT"", ""class"": [""Thief"", ""Wizard""]}"
+Saving,Wis,1,"{""stat"": ""WIS"", ""class"": [""Cleric"", ""Wizard""]}"
+Saving,Cha,1,"{""stat"": ""CHA"", ""class"": [""Thief"", ""Wizard""]}"
