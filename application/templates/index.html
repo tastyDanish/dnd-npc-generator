@@ -53,12 +53,11 @@
                 {{ npc.charisma }} ({{ npc.cha_string}})
             </td>
         </tr>
-    </table>
+    </table><br>
+    <b>Senses </b>{{ npc.senses }}<br>
     {% if npc.saving is not none %}
-        <br>
-        <b>Saving Throws </b>{{ npc.saving }}
+        <b>Saving Throws </b>{{ npc.saving }}<br>
     {% endif %}
-    <br>
     <b>Skills </b>
     {% for skill, bonus in npc.skills.items() %}
         {{ skill.value }} {{bonus}}{{ "," if not loop.last }}

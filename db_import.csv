@@ -38,15 +38,15 @@ Language,Infernal,1,"{""race"": ""Tiefling""}"
 Language,Sylvan,1,
 Language,Undercommon,1,
 Race,Human,5,"{""stat_bonus_1"": ""ANY 2"", ""speed"": ""30 feet"", ""extra_language"": ""True"", ""size"": ""Medium""}"
-Race,Elf,5,"{""stat_bonus_2"": ""DEX"", ""stat_bonus_1"": ""INT"", ""speed"": ""30 feet"", ""extra_language"": ""True"", ""size"": ""Medium"", ""sense"": ""darkvision 60 ft.}"
-Race,Half-Orc,5,"{""stat_bonus_2"": ""STR"", ""stat_bonus_1"": ""CON"", ""speed"": ""30 feet"", ""size"": ""Medium""}"
-Race,Half-Elf,5,"{""stat_bonus_2"": ""CHA"", ""stat_bonus_1"": ""ANY 2"", ""speed"": ""30 feet"", ""extra_language"": ""True"", ""size"": ""Medium""}"
+Race,Elf,5,"{""stat_bonus_2"": ""DEX"", ""stat_bonus_1"": ""INT"", ""speed"": ""30 feet"", ""extra_language"": ""True"", ""size"": ""Medium"", ""sense"": ""darkvision 60 ft.""}"
+Race,Half-Orc,5,"{""stat_bonus_2"": ""STR"", ""stat_bonus_1"": ""CON"", ""speed"": ""30 feet"", ""size"": ""Medium"", ""sense"": ""darkvision 60 ft.""}"
+Race,Half-Elf,5,"{""stat_bonus_2"": ""CHA"", ""stat_bonus_1"": ""ANY 2"", ""speed"": ""30 feet"", ""extra_language"": ""True"", ""size"": ""Medium"", ""sense"": ""darkvision 60 ft.""}"
 Race,Dragonborn,5,"{""stat_bonus_2"": ""STR"", ""stat_bonus_1"": ""CHA"", ""speed"": ""30 feet"", ""size"": ""Medium""}"
 Race,Halfling,5,"{""stat_bonus_2"": ""DEX"", ""stat_bonus_1"": ""CHA"", ""speed"": ""25 feet"", ""size"": ""Small""}"
-Race,Goblin,1,"{""stat_bonus_2"": ""DEX"", ""stat_bonus_1"": ""CON"", ""speed"": ""30 feet"", ""size"": ""Small""}"
+Race,Goblin,1,"{""stat_bonus_2"": ""DEX"", ""stat_bonus_1"": ""CON"", ""speed"": ""30 feet"", ""size"": ""Small"", ""sense"": ""darkvision 60 ft.""}"
 Race,Dwarf,5,"{""stat_bonus_2"": ""CON"", ""stat_bonus_1"": ""WIS"", ""speed"": ""30 feet"", ""size"": ""Medium"", ""sense"": ""darkvision 60 ft.""}"
-Race,Tiefling,5,"{""stat_bonus_2"": ""CHA"", ""stat_bonus_1"": ""INT"", ""speed"": ""30 feet"", ""size"": ""Medium""}"
-Race,Gnome,5,"{""stat_bonus_2"": ""INT"", ""stat_bonus_1"": ""DEX"", ""speed"": ""25 feet"", ""size"": ""Small""}"
+Race,Tiefling,5,"{""stat_bonus_2"": ""CHA"", ""stat_bonus_1"": ""INT"", ""speed"": ""30 feet"", ""size"": ""Medium"", ""sense"": ""darkvision 60 ft.""}"
+Race,Gnome,5,"{""stat_bonus_2"": ""INT"", ""stat_bonus_1"": ""DEX"", ""speed"": ""25 feet"", ""size"": ""Small"", ""sense"": ""darkvision 60 ft.""}"
 Name,Carl,1,
 Name,Francine,1,
 Name,Francis,1,

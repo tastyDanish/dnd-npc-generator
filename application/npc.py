@@ -102,7 +102,7 @@ class NPC:
     def __init__(self, level=1):
         self.level = level
         self.prof_bonus = 1 + ceil(level / 4)
-        attrs = Attributes.query.all()
+        attrs = Attributes.query
         self.name = random_weight.choose_one(get_list(attrs, 'Name'))
 
         # TODO: add more race specifics. e.g. elves get proficiency to darkvision
@@ -110,10 +110,9 @@ class NPC:
         self.race = self.generate_race(get_attributes(attrs, 'Race'))
         self.size = get_tag_value(self.race, 'size')
         self.speed = get_tag_value(self.race, 'speed')
-        # TODO: add senses to db and add them here
 
-        self.stats = self.generate_stats(get_attributes(attrs, 'Stat'),
-                                         get_attr_from_list(attrs, 'Race', self.race.value))
+        self.stats = self.generate_stats(get_attributes(attrs.all(), 'Stat'),
+                                         get_attr_from_list(attrs.all(), 'Race', self.race.value))
 
         self.strength = self.stats['STR']
         self.str = floor((int(self.strength) - 10) / 2)
@@ -142,20 +141,22 @@ class NPC:
         self.stat_bonus = {'STR': self.str, 'DEX': self.dex, 'CON': self.con,
                            'INT': self.int, 'WIS': self.wis, 'CHA': self.cha}
 
-        self.archetype = self.get_archetype(get_attributes(attrs, 'Class'))
+        self.archetype = self.get_archetype(get_attributes(attrs.all(), 'Class'))
 
-        self.saving = self.generate_saving()
+        self.saving = self.generate_saving(attrs)
 
-        self.skills = self.generate_skills(get_attributes(attrs, 'Skill'))
+        self.skills = self.generate_skills(get_attributes(attrs.all(), 'Skill'), attrs)
 
-        self.languages = self.generate_languages(get_list_and_weight(attrs, 'Language'))
+        self.senses = self.generate_senses()
+
+        self.languages = self.generate_languages(get_list_and_weight(attrs.all(), 'Language'), attrs)
 
         # TODO: fix shield logic
         # TODO: add a duel-weilding flag of some kind?
-        self.weapons = self.generate_weapons()
+        self.weapons = self.generate_weapons(attrs)
         self.shield = self.has_shield()
 
-        self.armor = self.generate_armor()
+        self.armor = self.generate_armor(attrs)
         self.ac = self.get_ac()
         self.ac_string = self.get_ac_string()
 
@@ -166,10 +167,10 @@ class NPC:
         race_dict = dict(zip(race_attrs, [x.weight for x in race_attrs]))
         return random_weight.roll_with_weights(race_dict)
 
-    def generate_saving(self):
-        class_saving = Attributes.query.filter_by(attribute='Saving').\
-            filter(Attributes.tags.any(tag_value=self.archetype.value)).all()
-        saving_number = random_weight.roll_with_weights({0: 2, 1: 5, 2: 5, 3: 2})
+    def generate_saving(self, attr_query):
+        class_saving = attr_query.filter_by(attribute='Saving').filter(
+            Attributes.tags.any(tag_value=self.archetype.value)).all()
+        saving_number = random_weight.roll_with_weights({0: 2, 1: 5, 2: 6, 3: 1})
         saving_string = ''
         saving_list = []
         if saving_number == 0:
@@ -182,10 +183,10 @@ class NPC:
                                                           self.stat_bonus[get_tag_value(saving_choice, 'stat')]))
         return saving_string[1:-1]
 
-    def generate_languages(self, lang_dict):
+    def generate_languages(self, lang_dict, attr_query):
         # Everyone knows common
         languages = ['Common']
-        race_lang = get_list(Attributes.query.filter_by(attribute='Language').filter(
+        race_lang = get_list(attr_query.filter_by(attribute='Language').filter(
             Attributes.tags.any(tag_name='race', tag_value=self.race.value)).all(), 'Language')
         if race_lang is not None:
             languages = languages + race_lang
@@ -195,21 +196,21 @@ class NPC:
             languages.append(random_weight.roll_with_weights_removal(lang_dict, languages))
         return languages
 
-    def generate_weapons(self):
+    def generate_weapons(self, attr_query):
         # check to see if we need a dex weapon
         if self.stats['DEX'] > self.stats['STR']:
-            weapon_list = Attributes.query.filter_by(attribute='Weapon').filter(
+            weapon_list = attr_query.filter_by(attribute='Weapon').filter(
                 (Attributes.tags.any(tag_name='arch', tag_value=self.archetype.value)) &
                 (Attributes.tags.any(tag_name='finesse', tag_value='True'))
             ).all()
             stat_bonus = self.stat_bonus['DEX']
         else:
-            if self.size == "small":
-                weapon_list = Attributes.query.filter_by(attribute='Weapon').filter(
+            if self.size != "small":
+                weapon_list = attr_query.filter_by(attribute='Weapon').filter(
                     Attributes.tags.any(tag_name='arch', tag_value=self.archetype.value)
                 ).all()
             else:
-                weapon_list = Attributes.query.filter_by(attribute='Weapon').filter(
+                weapon_list = attr_query.filter_by(attribute='Weapon').filter(
                     (Attributes.tags.any(tag_name='arch', tag_value=self.archetype.value)) &
                     (Attributes.tags.any(Tags.tag_value.notilike('heavy')))
                 ).all()
@@ -283,8 +284,8 @@ class NPC:
                 class_array[arch] = 10
         return random_weight.roll_with_weights(class_array)
 
-    def generate_armor(self):
-        armor_query = Attributes.query.filter_by(attribute='Armor').filter(
+    def generate_armor(self, attr_query):
+        armor_query = attr_query.filter_by(attribute='Armor').filter(
             Attributes.tags.any(tag_name='arch', tag_value=self.archetype.value))
         if 'Stealth' in [x.value for x in self.skills.keys()]:
             armor_query = armor_query.filter(
@@ -366,21 +367,21 @@ class NPC:
 
         return my_stats
 
-    def generate_skills(self, skill_attrs):
-        print(self.stats)
+    def generate_skills(self, skill_attrs, attr_query):
         skill_count = random_weight.roll_with_weights({3: 6, 4: 2, 5: 1})
         if self.archetype == 'Wizard':
             skill_count += 1
         skills = {}
         # Grab our class skills
-        class_skills = Attributes.query.filter_by(attribute='Skill'). \
+        class_skills = attr_query.filter_by(attribute='Skill'). \
             filter(Attributes.tags.any(tag_value=self.archetype.value)).all()
         # Grab a skill that matches the NPCs highest stat
         select = 4
-        if self.get_highest_stat() is not 'CON':
+        high_stat = self.get_highest_stat()
+        if high_stat is not 'CON':
             stat_skill = random_weight.choose_one(
                 Attributes.query.filter_by(attribute='Skill').filter(
-                    Attributes.tags.any(tag_name='skill_stat', tag_value=self.get_highest_stat())).all())
+                    Attributes.tags.any(tag_name='skill_stat', tag_value=high_stat)).all())
             skills[stat_skill] = string_bonus(
                 self.prof_bonus + self.stat_bonus[get_tag_value(stat_skill, 'skill_stat')])
             if stat_skill not in class_skills:
@@ -394,6 +395,16 @@ class NPC:
             choice = random_weight.choose_one_with_removal(all_skills, list(skills.keys()))
             skills[choice] = string_bonus(self.prof_bonus + self.stat_bonus[get_tag_value(choice, 'skill_stat')])
         return skills
+
+    def generate_senses(self):
+        if 'Perception' in [x.value for x in self.skills]:
+            passive_perception = 10 + self.prof_bonus + self.stat_bonus['WIS']
+        else:
+            passive_perception = 10 + self.stat_bonus['WIS']
+        if get_tag_value(self.race, 'sense') is not None:
+            return '{}, passive Perception {}'.format(get_tag_value(self.race, 'sense'), passive_perception)
+        else:
+            return 'passive Perception {}'.format(passive_perception)
 
     def get_highest_stat(self):
         """
@@ -448,6 +459,7 @@ if __name__ == '__main__':
                   my_npc.intellect, my_npc.int_string,
                   my_npc.wisdom, my_npc.wis_string,
                   my_npc.charisma, my_npc.cha_string))
+    print('Senses: {}'.format(my_npc.senses))
     print('Saving Throws: {}'.format(my_npc.saving))
     print('Skills:')
     for skill, bonus in my_npc.skills.items():
