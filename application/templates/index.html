@@ -68,8 +68,11 @@
         {{ language }}{{ "," if not loop.last }}
     {% endfor %}
     <br>
-    {% for weapon, string in npc.weapons.items() %}
-        <br>{{ string|safe }}<br>
+    {% if npc.two_weapon_fighting is not none %}
+        <br><b>Two-weapon Fighting </b>{{ npc.two_weapon_fighting }}<br>
+    {% endif %}
+    {% for wep_dict in npc.weapons %}
+        <br>{{ wep_dict['wep_string']|safe }}<br>
     {% endfor %}
 </div>
 

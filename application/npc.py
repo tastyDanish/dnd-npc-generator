@@ -96,7 +96,6 @@ def bonus_two_highest(stat_array, exclude=None):
     return stat_array
 
 
-# TODO: update to use the query object not a list of attributes.
 # That will let you filter on the query instead of hit the db again
 class NPC:
     def __init__(self, level=1):
@@ -151,9 +150,8 @@ class NPC:
 
         self.languages = self.generate_languages(get_list_and_weight(attrs.all(), 'Language'), attrs)
 
-        # TODO: fix shield logic
-        # TODO: add a duel-weilding flag of some kind?
         self.weapons = self.generate_weapons(attrs)
+        self.two_weapon_fighting = self.check_two_weapon_fighting()
         self.shield = self.has_shield()
 
         self.armor = self.generate_armor(attrs)
@@ -200,34 +198,43 @@ class NPC:
         # check to see if we need a dex weapon
         if self.stats['DEX'] > self.stats['STR']:
             weapon_list = attr_query.filter_by(attribute='Weapon').filter(
-                (Attributes.tags.any(tag_name='arch', tag_value=self.archetype.value)) &
-                (Attributes.tags.any(tag_name='finesse', tag_value='True'))
-            ).all()
+                (Attributes.tags.any(tag_name='arch', tag_value=self.archetype.value)) & (
+                        (Attributes.tags.any(tag_name='finesse', tag_value='True')) |
+                        (Attributes.tags.any(tag_name='attack_type', tag_value='ranged'))
+                )
+            )
             stat_bonus = self.stat_bonus['DEX']
         else:
             if self.size != "small":
                 weapon_list = attr_query.filter_by(attribute='Weapon').filter(
                     Attributes.tags.any(tag_name='arch', tag_value=self.archetype.value)
-                ).all()
+                )
             else:
                 weapon_list = attr_query.filter_by(attribute='Weapon').filter(
                     (Attributes.tags.any(tag_name='arch', tag_value=self.archetype.value)) &
                     (Attributes.tags.any(Tags.tag_value.notilike('heavy')))
-                ).all()
+                )
             stat_bonus = self.stat_bonus['STR']
-        weapon_count = random_weight.roll_with_weights({1: 5, 2: 2, 3:1})
+        if self.get_lowest_stat() == 'DEX':
+            weapon_list = weapon_list.filter(Attributes.tags.any(Tags.tag_value.notilike('ranged')))
+        weapon_count = random_weight.roll_with_weights({1: 7, 2: 5, 3: 1})
+        if weapon_count == 1 and self.stats['STR'] > self.stats['DEX']:
+            weapon_list = weapon_list.filter(Attributes.tags.any(tag_name='attack_type', tag_value='melee'))
+        weapon_list = weapon_list.all()
 
         weapon_dict = get_attr_and_weight(weapon_list, 'Weapon')
-        weapons = {}
-        for i in range(weapon_count):
-            if len(weapons.keys()) == len(weapon_dict.keys()):
-                continue
-            wep_choice = random_weight.roll_with_weights(weapon_dict)
+        weapons = []
+        ranged_weps = []
+        while len(weapons) < weapon_count:
+            if len(weapons) == len(weapon_dict.keys()):
+                break
+            wep_choice = random_weight.roll_with_weights_removal(weapon_dict, ranged_weps)
             wep_name = '<b>{}</b>'.format(wep_choice.value)
             attack_type_str = ''
             reach_str = ''
             new_bonus = None
             if get_tag_value(wep_choice, 'attack_type') == 'ranged':
+                ranged_weps = [x for x in weapon_dict.keys() if get_tag_value(x, 'attack_type') == 'ranged']
                 attack_type_str = '<i>Ranged Weapon Attack:</i>'
                 reach_str = 'range {}'.format(get_tag_value(wep_choice, 'range'))
                 if get_tag_value(wep_choice, 'thrown') and self.stats['STR'] > self.stats['DEX']:
@@ -249,14 +256,38 @@ class NPC:
             wep_string = '{}. {} {} to hit, {}, one target. <i>Hit:</i> {} {} damage.'\
                 .format(wep_name, attack_type_str, hit_bonus, reach_str, dmg_string,
                         get_tag_value(wep_choice, 'damage_type'))
-            weapons[wep_choice] = wep_string
+            weapons.append({'wep_attr': wep_choice, 'wep_string': wep_string})
         return weapons
+
+    def check_two_weapon_fighting(self):
+        weapon_one = None
+        weapon_two = None
+        for weapon_dict in self.weapons:
+            if get_tag_value(weapon_dict['wep_attr'], 'weight') == 'light':
+                if weapon_one is None:
+                    weapon_one = weapon_dict['wep_attr']
+                else:
+                    weapon_two = weapon_dict['wep_attr']
+        if weapon_one is not None and weapon_two is not None:
+            if int(get_tag_value(weapon_one, 'damage')[-1:]) < int(get_tag_value(weapon_two, 'damage')[-1:]):
+                weapon_one, weapon_two = weapon_two, weapon_one
+            return 'When {} attacks with {}, they may attack with {} as a bonus action or vice-versa'.format(
+                self.name, weapon_one.value, weapon_two.value)
+        else:
+            return None
 
     def has_shield(self):
         if self.archetype.value in ['Wizard', 'Thief']:
             return False
-        for weapon, string in self.weapons.items():
-            if get_tag_value(weapon, 'two_handed'):
+        if self.two_weapon_fighting is not None:
+            return False
+        if len(self.weapons) == 1 and get_tag_value(self.weapons[0]['wep_attr'], 'attack_type') == 'ranged':
+            return False
+        for wep_dict in self.weapons:
+            if get_tag_value(wep_dict['wep_attr'], 'two_handed'):
+                if get_tag_value(wep_dict['wep_attr'], 'attack_type') == 'ranged' \
+                        and self.stats['STR'] > self.stats['DEX']:
+                    continue
                 return False
         else:
             return True
@@ -440,7 +471,7 @@ class NPC:
                 small_stat = [stat]
             elif value == lowest:
                 small_stat.append(stat)
-        return small_stat
+        return random_weight.choose_one(small_stat)
 
 
 if __name__ == '__main__':
@@ -466,5 +497,7 @@ if __name__ == '__main__':
         print('{} {}'.format(skill.value, bonus))
     for language in my_npc.languages:
         print(language)
-    for key, val in my_npc.weapons.items():
-        print(val)
+    if my_npc.two_weapon_fighting is not None:
+        print('Two-weapon fighting: {}'.format(my_npc.two_weapon_fighting))
+    for wep in my_npc.weapons:
+        print(wep['wep_string'])
