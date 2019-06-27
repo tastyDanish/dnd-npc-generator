@@ -96,7 +96,8 @@ def bonus_two_highest(stat_array, exclude=None):
     return stat_array
 
 
-# That will let you filter on the query instead of hit the db again
+# TODO: It would be real sweet if things could be alphabetized when in a list.
+# TODO: add descriptions to the db
 class NPC:
     def __init__(self, level=1):
         self.level = level
