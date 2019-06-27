@@ -7,9 +7,6 @@ from application.models import Attributes, Tags
 from math import floor, ceil
 from random import randint
 
-# TODO: More stat arrays and weights for more stat variation
-_stat_array = [15, 14, 13, 12, 10, 8]
-
 
 def get_list(all_attributes, attribute):
     if all_attributes is None:
@@ -378,7 +375,14 @@ class NPC:
                            'CHA': int(get_attr_tag(stat_attrs, 'Stat', 'CHA', self.race.value))}
         my_stats = {}
         remove_stats = []
-        for i, stat in enumerate(_stat_array):
+        array_choice = random_weight.roll_with_weights({1: 65, 2: 25, 3: 10})
+        if array_choice == 1:
+            rolled_stats = random_weight.roll_stats(stat_array=True)
+        elif array_choice == 2:
+            rolled_stats = random_weight.roll_stats()
+        elif array_choice == 3:
+            rolled_stats = random_weight.roll_stats(drop_lowest=True)
+        for i, stat in enumerate(rolled_stats):
             chosen_stat = random_weight.roll_with_weights_removal(race_stat_array, remove_stats)
             my_stats[chosen_stat] = stat
             remove_stats.append(chosen_stat)

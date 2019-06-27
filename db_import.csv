@@ -53,7 +53,7 @@ Name,Francis,1,
 Name,Giblit,1,
 Weapon,Club,1,"{""damage"": ""1d4"", ""damage_type"": ""bludgeoning"", ""weight"": ""light"", ""attack_type"": ""melee"", ""reach"": ""5 ft."", ""arch"": [""Fighter"", ""Thief"", ""Cleric""]}"
 Weapon,Dagger,1,"{""damage"": ""1d4"",""damage_type"": ""piercing"", ""weight"": ""light"", ""finesse"": ""True"", ""attack_type"": ""melee"", ""range"": ""20/60 ft."", ""thrown"": ""True"", ""reach"": ""5 ft."", ""arch"": [""Thief"", ""Wizard""]}"
-Weapon,Greatclub,1,"{""damage"": ""1d8"", ""damage_type"": ""bludgeoning"", ""two-handed"": ""attack_type"": ""melee"", ""True"", ""reach"": ""5 ft."", ""arch"": [""Fighter"", ""Cleric""]}"
+Weapon,Greatclub,1,"{""damage"": ""1d8"", ""damage_type"": ""bludgeoning"", ""two_handed"": ""True"", ""attack_type"": ""melee"", ""reach"": ""5 ft."", ""arch"": [""Fighter"", ""Cleric""]}"
 Weapon,Handaxe,1,"{""damage"": ""1d6"", ""damage_type"": ""slashing"", ""weight"": ""light"", ""attack_type"": ""melee"", ""range"": ""20/60 ft."", ""thrown"": ""True"", ""reach"": ""5 ft."", ""arch"": ""Fighter""}"
 Weapon,Javelin,1,"{""damage"": ""1d6"", ""damage_type"": ""piercing"", ""attack_type"": ""melee"", ""range"": ""20/60 ft."", ""thrown"": ""True"", ""reach"": ""5 ft."", ""arch"": [""Fighter"", ""Cleric""]}"
 Weapon,Light Hammer,1,"{""damage"": ""1d4"", ""damage_type"": ""bludgeoning"", ""weight"": ""light"", ""attack_type"": ""melee"", ""range ft."": ""20/60"", ""thrown"": ""True"", ""reach"": ""5 ft."", ""arch"": [""Fighter"", ""Cleric""]}"

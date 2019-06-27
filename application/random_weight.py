@@ -64,3 +64,17 @@ def choose_several(choices, number, selection=None):
     for i in range(number):
         selection.append(choose_one_with_removal(choices, selection))
     return selection
+
+
+def roll_stats(stat_array=False, drop_lowest=False):
+    if stat_array:
+        return [15, 14, 13, 12, 10, 8]
+    stats = []
+    for i in range(6):
+        result = [random.randint(1, 6), random.randint(1, 6), random.randint(1, 6)]
+        if drop_lowest:
+            result.append(random.randint(1, 6))
+            result.remove(min(result))
+        stats.append(sum(result))
+    stats.sort(reverse=True)
+    return stats
