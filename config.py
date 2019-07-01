@@ -3,7 +3,12 @@ Author: Peter Lansdaal
 Date: 2019-06-22
 """
 import os
+import rds_config
 basedir = os.path.abspath(os.path.dirname(__file__))
+name = rds_config.db_username
+password = rds_config.db_password
+db_name = rds_config.db_name
+rds_db = 'enterthetavern.capczmfscvtq.us-west-2.rds.amazonaws.com:3306/{}'.format(db_name)
 
 
 class Config(object):
@@ -17,5 +22,6 @@ class Config(object):
     MAIL_USERNAME = os.environ.get('MAIL_USERNAME')
     MAIL_PASSWORD = os.environ.get('MAIL_PASSWORD')
     ADMINS = ['peter@plansdaal.com']
-    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or 'sqlite:///' + os.path.join(basedir, 'app.db')
+    # SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or 'sqlite:///' + os.path.join(basedir, 'app.db')
+    SQLALCHEMY_DATABASE_URI = 'mysql+pymysql://{}:{}@{}'.format(name, password, rds_db)
     SQLALCHEMY_TRACK_MODIFICATIONS = False

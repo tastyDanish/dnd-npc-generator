@@ -148,6 +148,7 @@ class NPC:
 
         self.languages = self.generate_languages(get_list_and_weight(attrs.all(), 'Language'), attrs)
 
+        # TODO: Add something for special text for weapons e.g. lance, net, etc.
         self.weapons = self.generate_weapons(attrs)
         self.two_weapon_fighting = self.check_two_weapon_fighting()
         self.shield = self.has_shield()

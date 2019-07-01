@@ -34,7 +34,7 @@ class Tags(db.Model):
     __tablename__ = 'Tags'
     id = db.Column(db.Integer, primary_key=True)
     tag_name = db.Column(db.String(128), nullable=False)
-    tag_value = db.Column(db.String(128), nullable=False)
+    tag_value = db.Column(db.String(256), nullable=False)
 
     def __init__(self, tag, value):
         self.tag_name = tag

@@ -89,7 +89,7 @@ Weapon,Longbow,1,"{""damage"": ""1d8"", ""damage_type"": ""piercing"", ""attack_
 Armor,Padded armor,1,"{""armor_type"": ""light"", ""AC"": 11, ""stealth_dis"": ""True"", ""arch"": [""Fighter"", ""Thief"", ""Wizard"", ""Cleric""]}"
 Armor,Leather armor,1,"{""armor_type"": ""light"", ""AC"": 11, ""arch"": [""Fighter"", ""Thief"", ""Wizard"", ""Cleric""]}"
 Armor,Studded Leather armor,1,"{""armor_type"": ""light"", ""AC"": 12, ""arch"": [""Fighter"", ""Thief"", ""Wizard"", ""Cleric""]}"
-Armor,Hide armor,"{""armor_type"": ""medium"", ""AC"": 12, ""arch"": [""Fighter"", ""Thief"", ""Cleric""]}"
+Armor,Hide armor,1,"{""armor_type"": ""medium"", ""AC"": 12, ""arch"": [""Fighter"", ""Thief"", ""Cleric""]}"
 Armor,Chain shirt,1,"{""armor_type"": ""medium"", ""AC"": 13, ""arch"": [""Fighter"", ""Thief"", ""Cleric""]}"
 Armor,Scale mail,1,"{""armor_type"": ""medium"", ""AC"": 14, ""stealth_dis"": ""True"", ""arch"": [""Fighter"", ""Thief"", ""Cleric""]}"
 Armor,Breastplate,1,"{""armor_type"": ""medium"", ""AC"": 14, ""arch"": [""Fighter"", ""Thief"", ""Cleric""]}"
