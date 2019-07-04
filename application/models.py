@@ -29,6 +29,31 @@ class Attributes(db.Model):
     def __repr__(self):
         return '<Attribute {} Value {} Weight {}>'.format(self.attribute, self.value, self.weight)
 
+    def get_tag(self, tag_name):
+        """
+        Searches through the tags of the attribute for the values of tag_name.
+        If a tag does not exist then it will return False.
+        This is to allow tags to be defined with the true value and not require a false as well.
+        :param tag_name: the tag name to look up
+        :return: str, boolean
+        """
+        tag_values = []
+        for tag in self.tags:
+            if tag.tag_name == tag_name:
+                tag_values.append(tag.tag_value)
+
+        if len(tag_values) == 1:
+            if tag_values[0].lower() == 'true':
+                return True
+            elif tag_values[0].lower() == 'false':
+                return False
+            else:
+                return tag_values[0]
+        elif len(tag_values) > 1:
+            return tag_values
+        else:
+            return False
+
 
 class Tags(db.Model):
     __tablename__ = 'Tags'
