@@ -12,20 +12,32 @@ from random import randint
 # TODO: It would be real sweet if things could be alphabetized when in a list.
 # TODO: add descriptions to the db
 class NPC:
-    def __init__(self, level=1):
-        self.level = level
-        self.prof_bonus = 1 + ceil(level / 4)
+    """
+    Generates an NPC with all of the stats
+    """
+    def __init__(self, level=None, race=None, archetype=None):
+        """
+        initializes the NPC by pulling all values from the database and randomly chooses attributes
+        :param level: the level of the NPC
+        """
+        if level is None or level == 'None':
+            self.level = 1
+        else:
+            self.level = int(level)
+        self.prof_bonus = 1 + ceil(self.level / 4)
         attrs = Attributes.query
         self.name = random_weight.choose_one(misc.get_list(attrs, 'Name'))
 
         # TODO: add more race specifics. e.g. elves get proficiency to darkvision
         # TODO: specify sub-races and give benefits
-        self.race = self.generate_race(misc.get_attributes(attrs, 'Race'))
+        if race is None or race == 'None':
+            self.race = self.generate_race(misc.get_attributes(attrs, 'Race'))
+        else:
+            self.race = misc.get_attr_from_list(attrs.all(), 'Race', race)
         self.size = self.race.get_tag('size')
         self.speed = self.race.get_tag('speed')
 
-        self.stats = self.generate_stats(misc.get_attributes(attrs.all(), 'Stat'),
-                                         misc.get_attr_from_list(attrs.all(), 'Race', self.race.value))
+        self.stats = self.generate_stats(misc.get_attributes(attrs.all(), 'Stat'), archetype)
 
         self.strength = self.stats['STR']
         self.str = floor((int(self.strength) - 10) / 2)
@@ -54,7 +66,10 @@ class NPC:
         self.stat_bonus = {'STR': self.str, 'DEX': self.dex, 'CON': self.con,
                            'INT': self.int, 'WIS': self.wis, 'CHA': self.cha}
 
-        self.archetype = self.get_archetype(misc.get_attributes(attrs.all(), 'Class'))
+        if archetype is None or archetype == 'None':
+            self.archetype = self.get_archetype(misc.get_attributes(attrs.all(), 'Archetype'))
+        else:
+            self.archetype = misc.get_attr_from_list(attrs.all(), 'Archetype', archetype)
 
         self.saving = self.generate_saving(attrs)
 
@@ -106,10 +121,91 @@ class NPC:
 
     @staticmethod
     def generate_race(race_attrs):
+        """
+        Choose a race from all of the race options in the list of race attributes
+        :param race_attrs: 
+        :return: 
+        """
         race_dict = dict(zip(race_attrs, [x.weight for x in race_attrs]))
         return random_weight.roll_with_weights(race_dict)
 
+    def generate_stats(self, stat_attrs, archetype=None):
+        """
+        Rolls the stats of the NPC
+        :param stat_attrs: all of the stat attributes
+        :param archetype: the predetermined archetype, this will influence stat generation
+        :return: the stat array
+        """
+
+        # First get the weight based off of the race and then if archetype is chosen, increase it for matching stats
+        str_weight = int(misc.get_attr_tag(stat_attrs, 'Stat', 'STR', self.race.value))
+        if archetype is not None and archetype in misc.get_attr_tag(stat_attrs, 'Stat', 'STR', 'archetype'):
+            str_weight += 40
+
+        dex_weight = int(misc.get_attr_tag(stat_attrs, 'Stat', 'STR', self.race.value))
+        if archetype is not None and archetype in misc.get_attr_tag(stat_attrs, 'Stat', 'DEX', 'archetype'):
+            dex_weight += 40
+
+        con_weight = int(misc.get_attr_tag(stat_attrs, 'Stat', 'STR', self.race.value))
+        if archetype is not None and archetype in misc.get_attr_tag(stat_attrs, 'Stat', 'CON', 'archetype'):
+            con_weight += 40
+
+        int_weight = int(misc.get_attr_tag(stat_attrs, 'Stat', 'STR', self.race.value))
+        if archetype is not None and archetype in misc.get_attr_tag(stat_attrs, 'Stat', 'INT', 'archetype'):
+            int_weight += 40
+
+        wis_weight = int(misc.get_attr_tag(stat_attrs, 'Stat', 'STR', self.race.value))
+        if archetype is not None and archetype in misc.get_attr_tag(stat_attrs, 'Stat', 'WIS', 'archetype'):
+            wis_weight += 40
+
+        cha_weight = int(misc.get_attr_tag(stat_attrs, 'Stat', 'STR', self.race.value))
+        if archetype is not None and archetype in misc.get_attr_tag(stat_attrs, 'Stat', 'CHA', 'archetype'):
+            cha_weight += 40
+
+        race_stat_array = {'STR': str_weight,
+                           'DEX': dex_weight,
+                           'CON': con_weight,
+                           'INT': int_weight,
+                           'WIS': wis_weight,
+                           'CHA': cha_weight}
+        print(race_stat_array)
+
+        my_stats = {}
+        remove_stats = []
+        array_choice = random_weight.roll_with_weights({1: 65, 2: 25, 3: 10})
+        if array_choice == 1:
+            rolled_stats = random_weight.roll_stats(stat_array=True)
+        elif array_choice == 2:
+            rolled_stats = random_weight.roll_stats()
+        elif array_choice == 3:
+            rolled_stats = random_weight.roll_stats(drop_lowest=True)
+        for i, stat in enumerate(rolled_stats):
+            chosen_stat = random_weight.roll_with_weights_removal(race_stat_array, remove_stats)
+            my_stats[chosen_stat] = stat
+            remove_stats.append(chosen_stat)
+
+        stat_bonus_2 = self.race.get_tag('stat_bonus_2')
+        if stat_bonus_2:
+            my_stats[stat_bonus_2] = my_stats[stat_bonus_2] + 2
+
+        stat_bonus_1 = self.race.get_tag('stat_bonus_1')
+        if stat_bonus_1:
+            if stat_bonus_1 == 'ANY 2':
+                if self.race.value == 'Human':
+                    my_stats = misc.bonus_two_highest(my_stats)
+                else:
+                    my_stats = misc.bonus_two_highest(my_stats, exclude='CHA')
+            else:
+                my_stats[stat_bonus_1] = my_stats[stat_bonus_1] + 1
+
+        return my_stats
+
     def generate_saving(self, attr_query):
+        """
+        Chooses between 0 and 3 stats to be proficiency with a saving throw
+        :param attr_query: the attribute query
+        :return: str
+        """
         class_saving = attr_query.filter_by(attribute='Saving').filter(
             Attributes.tags.any(tag_value=self.archetype.value)).all()
         saving_number = random_weight.roll_with_weights({0: 2, 1: 5, 2: 6, 3: 1})
@@ -124,8 +220,15 @@ class NPC:
                 .format(savings_choice.value, misc.string_bonus(self.prof_bonus +
                                                                 self.stat_bonus[savings_choice.get_tag('stat')]))
         return saving_string[1:-1]
-
+    
     def generate_languages(self, lang_dict, attr_query):
+        """
+        Generates a language known for an NPC. This will look up languages from the race, check to see if they get an
+        additional random language, and will maybe give an additional language
+        :param lang_dict: the dictionary of language options and weights
+        :param attr_query: the attributes query
+        :return: list
+        """
         # Everyone knows common
         languages = ['Common']
         race_lang = misc.get_list(attr_query.filter_by(attribute='Language').filter(
@@ -139,10 +242,18 @@ class NPC:
         return languages
 
     def generate_weapons(self, attr_query):
+        """
+        chooses 1 to 3 weapons for the NPC to use
+        returns the weapons as a dictionary with two values
+        'wep_attr' contains the weapons attributes
+        'wep_str' contains the weapons damage string
+        :param attr_query: the attributes query
+        :return: dict
+        """
         # check to see if we need a dex weapon
         if self.stats['DEX'] > self.stats['STR']:
             weapon_list = attr_query.filter_by(attribute='Weapon').filter(
-                (Attributes.tags.any(tag_name='arch', tag_value=self.archetype.value)) & (
+                (Attributes.tags.any(tag_name='archetype', tag_value=self.archetype.value)) & (
                         (Attributes.tags.any(tag_name='finesse', tag_value='True')) |
                         (Attributes.tags.any(tag_name='attack_type', tag_value='ranged'))
                 )
@@ -151,11 +262,11 @@ class NPC:
         else:
             if self.size != "small":
                 weapon_list = attr_query.filter_by(attribute='Weapon').filter(
-                    Attributes.tags.any(tag_name='arch', tag_value=self.archetype.value)
+                    Attributes.tags.any(tag_name='archetype', tag_value=self.archetype.value)
                 )
             else:
                 weapon_list = attr_query.filter_by(attribute='Weapon').filter(
-                    (Attributes.tags.any(tag_name='arch', tag_value=self.archetype.value)) &
+                    (Attributes.tags.any(tag_name='archetype', tag_value=self.archetype.value)) &
                     (Attributes.tags.any(Tags.tag_value.notilike('heavy')))
                 )
             stat_bonus = self.stat_bonus['STR']
@@ -204,6 +315,11 @@ class NPC:
         return weapons
 
     def check_two_weapon_fighting(self):
+        """
+        Determines if the NPC could fight with two weapons at the same time.
+        If they can, will either return a two weapon fighting string or None
+        :return: str
+        """
         weapon_one = None
         weapon_two = None
         for weapon_dict in self.weapons:
@@ -221,7 +337,11 @@ class NPC:
             return None
 
     def has_shield(self):
-        if self.archetype.value in ['Wizard', 'Thief']:
+        """
+        Checks to see if the NPC should weild a shield
+        :return: boolean
+        """
+        if self.archetype.value in ['Smart', 'Crafty']:
             return False
         if self.two_weapon_fighting is not None:
             return False
@@ -237,6 +357,10 @@ class NPC:
             return True
 
     def calculate_health(self):
+        """
+        Calculates health for levels higher than 1
+        :return: int
+        """
         health = 0
         for i in range(self.level):
             if i == 0:
@@ -247,6 +371,11 @@ class NPC:
         return health
 
     def get_archetype(self, class_attrs):
+        """
+        Choose an archetype. Highest and lowest stat can push or pull the NPC towards different archetypes
+        :param class_attrs:
+        :return: Attributes
+        """
         high_stat = self.get_highest_stat()
         low_stat = self.get_lowest_stat()
         class_array = {}
@@ -260,8 +389,13 @@ class NPC:
         return random_weight.roll_with_weights(class_array)
 
     def generate_armor(self, attr_query):
+        """
+        Chooses an armor, but first checks if the NPC could or should wear certain armor types
+        :param attr_query: the attributes query
+        :return: Attributes
+        """
         armor_query = attr_query.filter_by(attribute='Armor').filter(
-            Attributes.tags.any(tag_name='arch', tag_value=self.archetype.value))
+            Attributes.tags.any(tag_name='archetype', tag_value=self.archetype.value))
         if 'Stealth' in [x.value for x in self.skills.keys()]:
             armor_query = armor_query.filter(
                 (Attributes.tags.any(Tags.tag_name.notilike('stealth_dis')))
@@ -282,6 +416,10 @@ class NPC:
         return random_weight.roll_with_weights(armor_dict)
 
     def get_ac(self):
+        """
+        Calculates AC
+        :return: int
+        """
         ac = int(self.armor.get_tag('AC'))
         if self.armor.get_tag('armor_type') == 'light':
             ac = ac + self.stat_bonus['DEX']
@@ -295,6 +433,10 @@ class NPC:
         return ac
 
     def get_ac_string(self):
+        """
+        Builds the AC string that includes armor and shield
+        :return: str
+        """
         armor_string = '{} ({}'.format(self.ac, self.armor.value)
         if self.shield:
             armor_string = armor_string + ', Shield)'
@@ -302,56 +444,15 @@ class NPC:
             armor_string = armor_string + ')'
         return armor_string
 
-    def get_damage_string(self, weapon_attr, off=False):
-        dice = weapon_attr.get_tag('damage')
-        to_hit = misc.string_bonus(self.prof_bonus + self.stat_bonus[weapon_attr.get_tag('stat')])
-        if not off:
-            dmg_bonus = misc.string_bonus(self.stat_bonus[weapon_attr.get_tag('stat')])
-        else:
-            dmg_bonus = ''
-        return '{} to hit, one target. Hit: {}{} {} damage'\
-            .format(to_hit, dice, dmg_bonus, weapon_attr.get_tag('damage_type'))
-
-    def generate_stats(self, stat_attrs, race_attr):
-        race_stat_array = {'STR': int(misc.get_attr_tag(stat_attrs, 'Stat', 'STR', self.race.value)),
-                           'DEX': int(misc.get_attr_tag(stat_attrs, 'Stat', 'DEX', self.race.value)),
-                           'CON': int(misc.get_attr_tag(stat_attrs, 'Stat', 'CON', self.race.value)),
-                           'INT': int(misc.get_attr_tag(stat_attrs, 'Stat', 'INT', self.race.value)),
-                           'WIS': int(misc.get_attr_tag(stat_attrs, 'Stat', 'WIS', self.race.value)),
-                           'CHA': int(misc.get_attr_tag(stat_attrs, 'Stat', 'CHA', self.race.value))}
-        my_stats = {}
-        remove_stats = []
-        array_choice = random_weight.roll_with_weights({1: 65, 2: 25, 3: 10})
-        if array_choice == 1:
-            rolled_stats = random_weight.roll_stats(stat_array=True)
-        elif array_choice == 2:
-            rolled_stats = random_weight.roll_stats()
-        elif array_choice == 3:
-            rolled_stats = random_weight.roll_stats(drop_lowest=True)
-        for i, stat in enumerate(rolled_stats):
-            chosen_stat = random_weight.roll_with_weights_removal(race_stat_array, remove_stats)
-            my_stats[chosen_stat] = stat
-            remove_stats.append(chosen_stat)
-
-        stat_bonus_2 = race_attr.get_tag('stat_bonus_2')
-        if stat_bonus_2 is not None:
-            my_stats[stat_bonus_2] = my_stats[stat_bonus_2] + 2
-
-        stat_bonus_1 = race_attr.get_tag('stat_bonus_1')
-        if stat_bonus_1 is not None:
-            if stat_bonus_1 == 'ANY 2':
-                if self.race.value == 'Human':
-                    my_stats = misc.bonus_two_highest(my_stats)
-                else:
-                    my_stats = misc.bonus_two_highest(my_stats, exclude='CHA')
-            else:
-                my_stats[stat_bonus_1] = my_stats[stat_bonus_1] + 1
-
-        return my_stats
-
     def generate_skills(self, skill_attrs, attr_query):
+        """
+        Generates a list of skills the NPC is proficient in
+        :param skill_attrs: the skills attributes
+        :param attr_query: the attributes query
+        :return: list
+        """
         skill_count = random_weight.roll_with_weights({3: 6, 4: 2, 5: 1})
-        if self.archetype == 'Wizard':
+        if self.archetype == 'Smart':
             skill_count += 1
         skills = {}
         # Grab our class skills
@@ -379,6 +480,10 @@ class NPC:
         return skills
 
     def generate_senses(self):
+        """
+        Generates the senses string
+        :return: str
+        """
         if 'Perception' in [x.value for x in self.skills]:
             passive_perception = 10 + self.prof_bonus + self.stat_bonus['WIS']
         else:
@@ -426,5 +531,5 @@ class NPC:
 
 
 if __name__ == '__main__':
-    npc = NPC()
+    npc = NPC(level=9)
     print(npc)

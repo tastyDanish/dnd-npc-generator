@@ -7,6 +7,13 @@
         <h2>At the end of the bar you see {{ npc.name }}...</h2>
     </div>
     <hr>
+    <form action="" method="post">
+        {{ form.hidden_tag() }}
+        <p>
+            Barkeep! Do you know any level {{ form.level_choice }} {{ form.race_choice }} whose really {{ form.archetype_choice }}
+        </p>
+        {{ form.submit }}
+    </form>
     <b>Name</b> {{ npc.name }}<br>
     <i>{{ npc.size }} humanoid ({{ npc.race.value }})</i><br>
     <b>Armor Class</b> {{ npc.ac_string }}<br>

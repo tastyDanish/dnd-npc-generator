@@ -26,3 +26,7 @@ class TestApp(unittest.TestCase):
         actual_name_type = type(self.test_npc.name)
 
         assert actual_name_type == expected_name_type
+
+    def test_input_vals(self):
+        input_npc = NPC(level=9, race='Human', archetype='Bulky')
+        print(input_npc)

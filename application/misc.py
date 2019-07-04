@@ -38,7 +38,7 @@ def get_attr_from_list(attrs, attribute, value):
 def get_attr_tag(attrs, attribute, value, tag_name):
     my_attr = get_attr_from_list(attrs, attribute, value)
     if my_attr is not None:
-        return get_tag_value(my_attr, tag_name)
+        return my_attr.get_tag(tag_name)
 
 
 def bonus_two_highest(stat_array, exclude=None):
