@@ -1,6 +1,5 @@
 import unittest
-from application.models import Attributes, Tags
-
+from application.models import Attributes
 
 class TestApp(unittest.TestCase):
 
@@ -56,4 +55,6 @@ class TestApp(unittest.TestCase):
         actual_false = attr_false.get_tag(input_name)
 
         assert actual_false == expected_false
+
+
 
