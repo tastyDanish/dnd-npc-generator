@@ -4,19 +4,19 @@
 
 <div class="col-md-4 col-md-offset-4">
     <div align="center">
-        <h2>At the end of the bar you see {{ npc.name }}...</h2>
+        <h2>At the end of the bar you see {{ npc.name.value }}...</h2>
     </div>
     <hr>
     <form action="" method="post">
         {{ form.hidden_tag() }}
         <p>
-            Barkeep! Do you know any level {{ form.level_choice }} {{ form.race_choice }} whose really {{ form.archetype_choice }}
+            Barkeep! Do you know of any level {{ form.level_choice }} {{ form.race_choice }} whose really {{ form.archetype_choice }}
         </p>
         {{ form.submit }}
     </form>
-    <b>Name</b> {{ npc.name }}<br>
+    <b>Name</b> {{ npc.name.value }}<br>
     <i>{{ npc.size }} humanoid ({{ npc.race.value }})</i><br>
-    <b>Armor Class</b> {{ npc.ac_string }}<br>
+    <b>Armor Class</b> {{ npc.get_ac_string() }}<br>
     <b>Hit Points</b> {{ npc.health }}<br>
     <b>Speed</b> {{ npc.speed }}<br><br>
     <table>
@@ -42,44 +42,48 @@
         </tr>
         <tr>
             <td style="padding: 5px 10px 5px 5px;text-align: center;">
-                {{ npc.strength }} ({{ npc.str_string }})
+                {{ npc.stats['STR'] }} ({{ npc.get_stat_string('STR') }})
             </td>
             <td style="padding: 5px 10px 5px 5px;text-align: center;">
-                {{ npc.dexterity }} ({{ npc.dex_string }})
+                {{ npc.stats['DEX'] }} ({{ npc.get_stat_string('DEX') }})
             </td>
             <td style="padding: 5px 10px 5px 5px;text-align: center;">
-                {{ npc.constitution }} ({{ npc.con_string }})
+                {{ npc.stats['CON'] }} ({{ npc.get_stat_string('CON') }})
             </td>
             <td style="padding: 5px 10px 5px 5px;text-align: center;">
-                {{ npc.intellect }} ({{ npc.int_string }})
+                {{ npc.stats['INT'] }} ({{ npc.get_stat_string('INT') }})
             </td>
             <td style="padding: 5px 10px 5px 5px;text-align: center;">
-                {{ npc.wisdom }} ({{ npc.wis_string }})
+                {{ npc.stats['WIS'] }} ({{ npc.get_stat_string('WIS') }})
             </td>
             <td style="padding: 5px 10px 5px 5px;text-align: center;">
-                {{ npc.charisma }} ({{ npc.cha_string}})
+                {{ npc.stats['CHA'] }} ({{ npc.get_stat_string('CHA') }})
             </td>
         </tr>
     </table><br>
-    <b>Senses </b>{{ npc.senses }}<br>
+    <b>Senses </b>{{ npc.get_senses() }}<br>
     {% if npc.saving is not none %}
-        <b>Saving Throws </b>{{ npc.saving }}<br>
+        <b>Saving Throws </b>
+        {% for save in npc.get_savings_strings() %}
+            {{ save }}
+        {% endfor %}
+        <br>
     {% endif %}
     <b>Skills </b>
-    {% for skill, bonus in npc.skills.items() %}
-        {{ skill.value }} {{bonus}}{{ "," if not loop.last }}
+    {% for skill in npc.get_skill_strings() %}
+        {{ skill }}{{ "," if not loop.last }}
     {% endfor %}
     <br>
     <b>Languages </b>
     {% for language in npc.languages %}
-        {{ language }}{{ "," if not loop.last }}
+        {{ language.value }}{{ "," if not loop.last }}
     {% endfor %}
     <br>
     {% if npc.two_weapon_fighting is not none %}
         <br><b>Two-weapon Fighting </b>{{ npc.two_weapon_fighting }}<br>
     {% endif %}
-    {% for wep_dict in npc.weapons %}
-        <br>{{ wep_dict['wep_string']|safe }}<br>
+    {% for weapon in npc.get_weapon_strings() %}
+        <br>{{ weapon|safe }}<br>
     {% endfor %}
 </div>
 

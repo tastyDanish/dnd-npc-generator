@@ -1,5 +1,5 @@
-from flask import render_template, request, redirect, url_for
-from application import application, db
+from flask import render_template, request
+from application import application
 from application.npc import NPC
 from application.forms import FindNpc
 from application.models import Attributes
@@ -32,5 +32,6 @@ def index(find_level=1, find_race=None, find_archetype=None):
             find_race = form.race_choice.data
             find_archetype = form.archetype_choice.data
 
-    my_npc = NPC(level=find_level, race=find_race, archetype=find_archetype)
+    my_npc = NPC()
+    my_npc.generate_npc(level=find_level, race=find_race, archetype=find_archetype)
     return render_template('index.html', npc=my_npc, form=form)
