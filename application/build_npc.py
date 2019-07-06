@@ -208,3 +208,39 @@ def generate_health(level, archetype, con_bonus):
             health += randint(1, int(archetype.get_tag('health'))) + con_bonus
 
     return health
+
+
+def generate_description(attrs, weapons, armors):
+    desc_attrs = misc.get_attr_and_weights(attrs, 'Description')
+    x = 0
+    while x < 5:
+        x += 1
+        desc = roll.one_with_weights(desc_attrs)
+
+        tag_dict = desc.get_tag_dict()
+        tag_fills = {}
+        for key, vals in tag_dict.items():
+            if key != 'weapon_name_req' or key != 'armor_name_req':
+                tag_fills[key] = roll.one(vals)
+            elif key == 'weapon':
+                tag_fills[key] = roll.one(weapons)
+            elif key == 'armor':
+                tag_fills[key] = roll.one(armors)
+
+        if 'weapon_name_req' in tag_dict.keys():
+            weapon = roll.from_list_if_list(tag_dict['weapon_name_req'], weapons)
+            if weapon is None:
+                continue
+            else:
+                tag_fills['weapon'] = weapon.lower()
+
+        if 'armor_name_req' in tag_dict.keys():
+            armor = roll.from_list_if_list(tag_dict['armor_name_req'], armors)
+            if armor is None:
+                continue
+            else:
+                tag_fills['armor'] = armor.lower()
+
+        return desc.value.format_map(tag_fills)
+    else:
+        return 'They have a blank expression on their face'

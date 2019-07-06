@@ -10,6 +10,7 @@ class Character:
     def __init__(self):
         self.level = 1
         self.prof_bonus = 2
+        # change these to attributes to match NPC format?
         self.name = 'bob'
         self.race = 'blob'
         self.size = 'Small'

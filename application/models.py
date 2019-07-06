@@ -54,6 +54,15 @@ class Attributes(db.Model):
         else:
             return False
 
+    def get_tag_dict(self):
+        tag_dict = {}
+        for tag in self.tags:
+            if tag.tag_name in tag_dict.keys():
+                tag_dict[tag.tag_name].append(tag.tag_value)
+            else:
+                tag_dict[tag.tag_name] = [tag.tag_value]
+        return tag_dict
+
 
 class Tags(db.Model):
     __tablename__ = 'Tags'

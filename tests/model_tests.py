@@ -56,5 +56,16 @@ class TestApp(unittest.TestCase):
 
         assert actual_false == expected_false
 
+    def test_get_tag_dict(self):
+        attr = 'Saving'
+        attr_value = 'Str'
+        expected_dict = {'stat': ['STR'], 'archetype': ['Bulky', 'Faithful']}
+
+        attr_save_str = Attributes.query.filter_by(attribute=attr, value=attr_value).first()
+
+        actual_dict = attr_save_str.get_tag_dict()
+
+        assert actual_dict == expected_dict
+
 
 

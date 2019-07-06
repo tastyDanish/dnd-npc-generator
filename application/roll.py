@@ -12,7 +12,7 @@ def one_with_weights(things):
     :type things: list
     :return: the chosen item
     """
-    return random.choices([x[0] for x in things], weights=[x[1] for x in things])[0]
+    return random.choices([x[0] for x in things], weights=[int(x[1]) for x in things])[0]
 
 
 def one_with_weights_and_removal(things, remove):
@@ -80,3 +80,17 @@ def roll_stats(stat_array=False, drop_lowest=False):
         stats.append(sum(result))
     stats.sort(reverse=True)
     return stats
+
+
+def from_list_if_list(list_one, list_two):
+    vals = []
+    for x in list_one:
+        for y in list_two:
+            if x.lower() == y.lower():
+                vals.append(x)
+                break
+
+    if len(vals) > 0:
+        return one(vals)
+    else:
+        return None

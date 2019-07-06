@@ -28,7 +28,7 @@ def get_attr_and_weights(attrs, attr_name=None):
     if attr_name is None:
         return [(x, x.weight) for x in attrs]
     else:
-        return [(x, x.weight) for x in attrs if attrs.attribute == attr_name]
+        return [(x, x.weight) for x in attrs if x.attribute == attr_name]
 
 
 def string_bonus(bonus):

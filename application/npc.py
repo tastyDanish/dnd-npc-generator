@@ -22,14 +22,15 @@ class NPC(Character):
     Generates an NPC with all of the stats
     """
     def __init__(self):
-        """
-        initializes the NPC by pulling all values from the database and randomly chooses attributes
-        """
         Character.__init__(self)
         self.two_weapon_fighting = None
         self.archetype = None
+        self.description = None
 
     def generate_npc(self, level=None, race=None, archetype=None):
+        """
+        Generates the NPC by pulling all values from the database and randomly chooses attributes
+        """
         attr_q = Attributes.query
         attr_l = attr_q.all()
 
@@ -84,6 +85,10 @@ class NPC(Character):
         # calculate health
         self.health = build_npc.generate_health(self.level, self.archetype, self.get_stat_bonus('CON'))
 
+        self.description = build_npc.generate_description(attr_l,
+                                                          [x.value for x in self.weapons],
+                                                          [x.value for x in self.armor])
+
     def __repr__(self):
         val_str = 'Name: {}\n'.format(self.name.value)
         val_str += 'Race: {}\n'.format(self.race.value)
@@ -112,7 +117,7 @@ class NPC(Character):
             val_str += 'Two-weapon fighting: {}\n'.format(self.two_weapon_fighting)
         for wep_string in self.get_weapon_strings():
             val_str += '{}\n'.format(wep_string)
-
+        val_str += self.description
         return val_str
 
     def get_skill_strings(self):
