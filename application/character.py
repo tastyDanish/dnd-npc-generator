@@ -21,6 +21,10 @@ class Character:
                       'INT': 10,
                       'WIS': 10,
                       'CHA': 10}
+        self.caster = False
+        self.cast_stat = None
+        self.cantrips = []
+        self.spells = []
         self.saving_throws = []
         self.skills = []
         self.languages = []
@@ -61,6 +65,26 @@ class Character:
             return one(big_stat)
         except IndexError:
             return one(list(self.stats.keys()))
+
+    def get_second_highest_stat(self):
+        if self.stats['STR'] > self.stats['DEX']:
+            max_stat = 'STR'
+            second_max_stat = 'DEX'
+        else:
+            max_stat = 'DEX'
+            second_max_stat = 'STR'
+
+        for stat, value in self.stats.items():
+            if stat in ['STR', 'DEX']:
+                continue
+            if value > self.stats[max_stat]:
+                second_max_stat = max_stat
+                max_stat = stat
+            else:
+                if value > self.stats[second_max_stat]:
+                    second_max_stat = stat
+
+        return second_max_stat
 
     def get_lowest_stat(self):
         """

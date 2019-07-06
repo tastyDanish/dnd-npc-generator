@@ -17,6 +17,7 @@ from random import randint
 # TODO: specify sub-races and give benefits
 # TODO: Add something for special text for weapons e.g. lance, net, etc.
 # TODO: include the possibility of knowing spells
+# TODO: multiple attacks for higher level npcs?
 class NPC(Character):
     """
     Generates an NPC with all of the stats

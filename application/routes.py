@@ -8,7 +8,6 @@ from application.models import Attributes
 @application.route('/', methods=['GET', 'POST'])
 @application.route('/index', methods=['GET', 'POST'])
 def index(find_level=1, find_race=None, find_archetype=None):
-    print('level {} race {} archetype {}'.format(find_level, find_race, find_archetype))
     form = FindNpc()
 
     form.level_choice.choices = [('1', '1'), ('2', '2'), ('3', '3'), ('4', '4'), ('5', '5'),
@@ -33,5 +32,6 @@ def index(find_level=1, find_race=None, find_archetype=None):
             find_archetype = form.archetype_choice.data
 
     my_npc = NPC()
+    print('level {} race {} archetype {}'.format(find_level, find_race, find_archetype))
     my_npc.generate_npc(level=find_level, race=find_race, archetype=find_archetype)
     return render_template('index.html', npc=my_npc, form=form)

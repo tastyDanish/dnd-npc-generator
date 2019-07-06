@@ -1,6 +1,7 @@
 from application.models import Attributes, Tags
 from application import roll, misc
 from random import randint
+from math import floor
 
 
 def generate_race(attrs):
@@ -39,9 +40,22 @@ def generate_stats(attrs, race, archetype):
             stat_weight += 40
         race_stat_array[k] = (stat[0], stat_weight)
 
+    removed_arch_weights = False
     for stat in rolled_stats:
+        print(race_stat_array)
         chosen_stat = roll.one_with_weights_and_removal(race_stat_array, list(my_stats.keys()))
+        print('{}: {}'.format(chosen_stat, stat))
         my_stats[chosen_stat] = stat
+        print(my_stats)
+
+        if not removed_arch_weights and archetype is not None \
+                and archetype in misc.get_attr_tag(stat_attrs, 'Stat', chosen_stat, 'archetype'):
+            removed_arch_weights = True
+            print('removing additional archetype weights')
+            for k, stat_val in enumerate(race_stat_array):
+                if archetype in misc.get_attr_tag(stat_attrs, 'Stat', stat_val[0], 'archetype'):
+                    print('lowering {} weight from {} to {}'.format(stat_val[0], stat_val[1], stat_val[1] - 40))
+                    race_stat_array[k] = (stat_val[0], stat_val[1] - 40)
 
     return my_stats
 
@@ -244,3 +258,60 @@ def generate_description(attrs, weapons, armors):
         return desc.value.format_map(tag_fills)
     else:
         return 'They have a blank expression on their face'
+
+
+def generate_caster(archetype, level, high_stat, second_high_stat):
+    # Two things these need to capture
+    # spells known and the number of slots available
+    # full caster, wizard, cleric, sorceror, bard
+    # Full casters: smart characters or faithful with WIS as highest stat
+    if roll.one_with_weights([(0, 10), (1, 4 + (level ** 2))]) == 1 and archetype.value == 'Smart' or (
+            archetype.value == 'Faithful' and high_stat == 'WIS'):
+        cantrips_known = floor(3 + (level / 10))
+        spell_cap = 4 + level
+        spells_known = roll.one(list(range(int(spell_cap / 2), spell_cap)))
+
+        return 'Full Caster', cantrips_known, spells_known, high_stat
+        # return pick_spells(archetype, level, spells_known, cantrips_known, high_stat)
+
+    # half caster: faithful characters with WIS as second highest stat, crafty characters with INT or CHA as high stat
+    # only after level 2
+    if roll.one_with_weights([(0, 20), (1, min(20, 2 * level))]) == 1 and level >= 2 and (
+            (archetype.value == 'Crafty' and high_stat in ['INT', 'CHA']) or (
+            archetype.value == 'Faithful' and second_high_stat == 'WIS')):
+        cantrips_known = floor(2 + (level / 10))
+        spell_cap = floor(3 + ((level - 1) / 2))
+        spells_known = roll.one(list(range(int(spell_cap / 2), spell_cap)))
+        if archetype == 'Faithful':
+            cast_stat = second_high_stat
+        else:
+            cast_stat = high_stat
+
+        return 'Half Caster', cantrips_known, spells_known, cast_stat
+        # return pick_spells(archetype, level, spells_known, cantrips_known, cast_stat)
+
+    # 1/3 caster: Bulky characters with INT/WIS/CHA as one of top 2 stats
+    # or crafty characters with INT or CHA as second high stat
+    # only after level 3
+    if roll.one_with_weights([(0, 20), (1, min(10, level))]) == 1 and level >= 3 and (
+            (archetype.value == 'Bulky' and high_stat in ['INT', 'WIS', 'CHA']
+             or second_high_stat in ['INT', 'WIS', 'CHA']) or (
+            archetype.value == 'Crafty' and second_high_stat in ['INT', 'CHA'])):
+        cantrips_known = floor(1 + (level / 10))
+        spell_cap = floor(4 + ((level - 1) / 3))
+        spells_known = roll.one(list(range(int(spell_cap / 2), spell_cap)))
+
+        if archetype == 'Bulky' and high_stat in ['INT', 'WIS', 'CHA']:
+            cast_stat = high_stat
+        else:
+            cast_stat = second_high_stat
+
+        return 'Third Caster', cantrips_known, spells_known, cast_stat
+        # return pick_spells(archetype, level, spells_known, cantrips_known, cast_stat)
+
+    return False, 0, 0, None
+
+
+def pick_spells(archetype, spells_known, cantrips_known, cast_stat, highest_spell):
+
+    return None
