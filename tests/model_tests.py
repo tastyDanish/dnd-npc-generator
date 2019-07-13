@@ -1,6 +1,7 @@
 import unittest
 from application.models import Attributes
 
+
 class TestApp(unittest.TestCase):
 
     def setUp(self):
